@@ -4,614 +4,449 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="screen-orientation" content="portrait">
-<!--
-ゲーム要件:
-App Name: Roppon Code Editor
-Type: Web Application
-Platform: iPhone (Portrait Only)
-Orientation: Portrait Fixed
-Screen Structure: 1 Screen, No Transition
-Layout: Header 10%, List 70%, Control 20%
-Features:
-- BPM: Immediate/Pending update logic
-- Key: 0-11 Integer, Transpose immediately, No flats
-- Loop: Playlist filter (Top to Bottom, Skip OFF)
-- Audio: Drum + Piano, No silent frames
-- Storage: LocalStorage Auto Save/Load
--->
+
 <title>Roppon Code Editor</title>
+
 <style>
-/* CSS Reset & Basics */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-body { margin: 0; padding: 0; background-color: #000000; color: #ffffff; overflow: hidden; width: 100vw; height: 100vh; touch-action: none; }
-input, select, button { outline: none; border: none; background: none; color: inherit; font-family: inherit; }
 
-/* Layout Grid */
-#app { display: flex; flex-direction: column; width: 100%; height: 100%; padding: 3% 3%; }
+/* ===== iPhone / Android VH Fix ===== */
+:root {
+  --vh: 1vh;
+  --safe-bottom: env(safe-area-inset-bottom);
+}
 
-/* Header (10%) */
-header { height: 10%; position: relative; display: flex; flex-direction: column; margin-bottom: 1%; }
-.header-title { position: absolute; top: 2%; right: 4%; font-size: 3.2vw; font-weight: bold; color: #666; width: 40vw; text-align: right; line-height: 1.2; }
-.settings-area { height: 65%; margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; }
+html, body {
+  width: 100%;
+  height: calc(var(--vh) * 100);
+  overflow: hidden;
+}
 
-.setting-box { width: 48%; height: 55%; background: #1a1a1a; border-radius: 8px; display: flex; align-items: center; position: relative; }
-.setting-label { position: absolute; top: -2.5vh; left: 0; font-size: 3.5vw; color: #888; font-weight: bold; }
+/* ================================== */
 
-/* BPM Input */
-#bpm-input { width: 100%; height: 100%; text-align: center; font-size: 6vw; font-weight: bold; background: #222; border-radius: 6px; color: #fff; }
+/* CSS Reset */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Helvetica, Arial, sans-serif;
+}
 
-/* Key Selector */
-.key-display { flex: 1; text-align: center; font-size: 6vw; font-weight: bold; }
-.key-controls { display: flex; flex-direction: column; justify-content: center; gap: 1vh; padding-right: 3vw; }
-.key-arrow { font-size: 4vw; color: #4CCFFF; cursor: pointer; line-height: 0.8; }
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  color: #fff;
+  touch-action: none;
+}
 
-/* Main List (70%) */
-main { height: 70%; overflow-y: auto; position: relative; padding-top: 1vh; -webkit-overflow-scrolling: touch; padding-bottom: 2vh; }
-/* Hide scrollbar */
-main::-webkit-scrollbar { display: none; }
+input, select, button {
+  outline: none;
+  border: none;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+}
 
-.line-row { height: 13.2vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2vh; position: relative; background: #111; border-radius: 8px; padding: 0 1vw; transition: background 0.2s; }
-.line-row.playing { border: 1px solid #4CCFFF; box-shadow: 0 0 10px rgba(76, 207, 255, 0.3); }
+/* Layout */
+#app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 3% 3%;
+  padding-bottom: calc(3% + var(--safe-bottom));
+}
 
-/* Loop Btn */
-.loop-btn { width: 5vw; height: 5vw; border-radius: 50%; border: 2px solid #444; margin-left: 1.5vw; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
-.loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 8px #4CCFFF; }
+/* Header */
+header {
+  height: 10%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1%;
+}
 
-/* Part Select */
-.part-select { width: 18%; height: 76%; background: #222; border-radius: 4px; font-size: 2.8vw; color: #ccc; padding-left: 1vw; appearance: none; position: relative; }
-.part-wrapper { position: relative; width: 18%; height: 76%; }
-.part-wrapper::after { content: '▼'; position: absolute; right: 0.5vw; top: 50%; transform: translateY(-50%); font-size: 1.8vw; color: #4CCFFF; pointer-events: none; }
-.part-wrapper select { width: 100%; height: 100%; background: #222; color: #fff; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 2.8vw; }
+.header-title {
+  position: absolute;
+  top: 2%;
+  right: 4%;
+  font-size: 3.2vw;
+  font-weight: bold;
+  color: #666;
+  width: 40vw;
+  text-align: right;
+}
 
-/* Chords Input */
-.chords-input { width: 45%; height: 76%; background: #222; border-radius: 4px; font-size: 3.5vw; color: #fff; padding: 0 2vw; border: 1px solid #333; }
-.chords-input::placeholder { color: #555; font-size: 2.5vw; }
+.settings-area {
+  height: 65%;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
 
-/* Template Select */
-.template-wrapper { position: relative; width: 30%; height: 76%; }
-.template-wrapper::after { content: '▼'; position: absolute; right: 0.5vw; top: 50%; transform: translateY(-50%); font-size: 1.8vw; color: #4CCFFF; pointer-events: none; }
-.template-wrapper select { width: 100%; height: 100%; background: #222; color: #aaa; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 2.2vw; }
+.setting-box {
+  width: 48%;
+  height: 55%;
+  background: #1a1a1a;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
 
-/* Add Button */
-.add-btn { width: 100%; height: 8vh; background: none; color: #666; font-size: 8vw; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; margin-top: 1vh; }
-.add-btn:active { color: #fff; }
+.setting-label {
+  position: absolute;
+  top: -2.5vh;
+  left: 0;
+  font-size: 3.5vw;
+  color: #888;
+  font-weight: bold;
+}
 
-/* Controls (20%) */
-footer { height: 20%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 3%; position: relative; }
+/* BPM */
+#bpm-input {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 6vw;
+  font-weight: bold;
+  background: #222;
+  border-radius: 6px;
+}
 
-.page-dots { display: flex; gap: 1.5vw; margin-bottom: 3vh; }
-.dot { width: 1.2vw; height: 1.2vw; border-radius: 50%; background: #333; }
-.dot.active { background: #4CCFFF; }
+/* Key */
+.key-display {
+  flex: 1;
+  text-align: center;
+  font-size: 6vw;
+  font-weight: bold;
+}
 
-.play-btn { width: 22vw; height: 22vw; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4vw; font-weight: bold; color: #fff; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: transform 0.1s; }
-.play-btn.stop { background: #FF3B30; box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); }
-.play-btn.play { background: #34C759; box-shadow: 0 0 20px rgba(52, 199, 89, 0.4); }
-.play-btn:active { transform: scale(0.95); }
+.key-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  padding-right: 3vw;
+}
 
-/* Headers for columns */
-.col-headers { display: flex; width: 100%; padding: 0 4vw; margin-bottom: 1vh; color: #666; font-size: 3vw; font-weight: bold; }
-.col-h-part { width: 18%; margin-left: 8%; }
-.col-h-chord { width: 45%; margin-left: 2%; }
-.col-h-temp { width: 30%; margin-left: 2%; }
+.key-arrow {
+  font-size: 4vw;
+  color: #4CCFFF;
+}
+
+/* Main */
+main {
+  height: 70%;
+  overflow-y: auto;
+  padding-top: 1vh;
+  padding-bottom: 3vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+main::-webkit-scrollbar {
+  display: none;
+}
+
+/* Rows */
+.line-row {
+  height: 13.2vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2vh;
+  background: #111;
+  border-radius: 8px;
+  padding: 0 1vw;
+}
+
+.line-row.playing {
+  border: 1px solid #4CCFFF;
+  box-shadow: 0 0 10px rgba(76,207,255,.3);
+}
+
+/* Loop */
+.loop-btn {
+  width: 5vw;
+  height: 5vw;
+  border-radius: 50%;
+  border: 2px solid #444;
+  margin-left: 1.5vw;
+}
+
+.loop-btn.active {
+  background: #4CCFFF;
+  border-color: #4CCFFF;
+}
+
+/* Part */
+.part-wrapper {
+  width: 18%;
+  height: 76%;
+  position: relative;
+}
+
+.part-wrapper::after {
+  content: '▼';
+  position: absolute;
+  right: .5vw;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.8vw;
+  color: #4CCFFF;
+}
+
+.part-wrapper select {
+  width: 100%;
+  height: 100%;
+  background: #222;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 2.8vw;
+}
+
+/* Chords */
+.chords-input {
+  width: 45%;
+  height: 76%;
+  background: #222;
+  border-radius: 4px;
+  font-size: 3.5vw;
+  padding: 0 2vw;
+  border: 1px solid #333;
+}
+
+/* Template */
+.template-wrapper {
+  width: 30%;
+  height: 76%;
+  position: relative;
+}
+
+.template-wrapper::after {
+  content: '▼';
+  position: absolute;
+  right: .5vw;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.8vw;
+  color: #4CCFFF;
+}
+
+.template-wrapper select {
+  width: 100%;
+  height: 100%;
+  background: #222;
+  color: #aaa;
+  border-radius: 4px;
+  font-size: 2.2vw;
+}
+
+/* Add */
+.add-btn {
+  width: 100%;
+  height: 8vh;
+  color: #666;
+  font-size: 8vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Footer */
+footer {
+  height: 20%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: calc(3% + var(--safe-bottom));
+}
+
+.page-dots {
+  display: flex;
+  gap: 1.5vw;
+  margin-bottom: 3vh;
+}
+
+.dot {
+  width: 1.2vw;
+  height: 1.2vw;
+  border-radius: 50%;
+  background: #333;
+}
+
+.dot.active {
+  background: #4CCFFF;
+}
+
+.play-btn {
+  width: 22vw;
+  height: 22vw;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.play-btn.play {
+  background: #34C759;
+}
+
+.play-btn.stop {
+  background: #FF3B30;
+}
 
 </style>
 </head>
+
 <body>
 
 <div id="app">
-  <header>
-    <div class="header-title">Roppon Code Editor</div>
-    <div class="settings-area">
-      <div class="setting-box">
-        <div class="setting-label">BPM</div>
-        <input type="number" id="bpm-input" value="120" min="40" max="300">
-      </div>
-      <div class="setting-box">
-        <div class="setting-label">Key</div>
-        <div class="key-display" id="key-display">C</div>
-        <div class="key-controls">
-          <div class="key-arrow" id="key-up">▲</div>
-          <div class="key-arrow" id="key-down">▼</div>
-        </div>
+
+<header>
+  <div class="header-title">Roppon Code Editor</div>
+
+  <div class="settings-area">
+
+    <div class="setting-box">
+      <div class="setting-label">BPM</div>
+      <input type="number" id="bpm-input" value="120">
+    </div>
+
+    <div class="setting-box">
+      <div class="setting-label">Key</div>
+
+      <div class="key-display" id="key-display">C</div>
+
+      <div class="key-controls">
+        <div class="key-arrow" id="key-up">▲</div>
+        <div class="key-arrow" id="key-down">▼</div>
       </div>
     </div>
-  </header>
 
-  <div class="col-headers">
-    <div style="width: 7%"></div>
-    <div class="col-h-part">Part</div>
-    <div class="col-h-chord">Chords</div>
-    <div class="col-h-temp">Template</div>
+  </div>
+</header>
+
+<main id="line-container">
+  <div class="add-btn" id="add-btn">+</div>
+</main>
+
+<footer>
+
+  <div class="page-dots">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot active"></div>
+    <div class="dot"></div>
   </div>
 
-  <main id="line-container">
-    <!-- Lines injected here -->
-    <div class="add-btn" id="add-btn">+</div>
-  </main>
+  <div class="play-btn play" id="play-btn">PLAY</div>
 
-  <footer>
-    <div class="page-dots">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot active"></div>
-      <div class="dot"></div>
-    </div>
-    <div class="play-btn play" id="play-btn">PLAY</div>
-  </footer>
+</footer>
+
 </div>
 
 <script>
-// --- Constants & Data ---
-const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const PARTS = ["Intro", "A", "B", "Pre-Chorus", "Chorus", "Interlude", "C", "Outro"];
-const PARTS_DISPLAY = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
 
-// Templates with Degrees
-const TEMPLATES = [
-  { name: "王道進行", deg: ["I", "V", "vi", "IV"], usage: "サビ最頻出" },
-  { name: "マイナー王道", deg: ["vi", "IV", "I", "V"], usage: "切な系サビ" },
-  { name: "逆王道", deg: ["IV", "V", "iii", "vi"], usage: "A・Bメロ" },
-  { name: "小室進行", deg: ["vi", "IV", "V", "I"], usage: "90s疾走" },
-  { name: "丸サ進行", deg: ["IV", "V", "iii", "vi"], usage: "歌い出し" },
-  { name: "カノン進行", deg: ["I", "V", "vi", "iii", "IV", "I", "IV", "V"], usage: "バラード" },
-  { name: "4度進行", deg: ["I", "IV", "V", "I"], usage: "明るい" },
-  { name: "泣き進行", deg: ["I", "iii", "vi", "V"], usage: "感動" },
-  { name: "青春進行", deg: ["I", "V", "IV", "V"], usage: "爽やか" },
-  { name: "Bメロ定番", deg: ["ii", "V", "I"], usage: "解決感" },
-  { name: "ロック定番", deg: ["I", "bVII", "IV"], usage: "洋楽風" },
-  { name: "エモ進行", deg: ["vi", "I", "V", "IV"], usage: "エモい" }
-];
+/* ===== VH Auto Fix ===== */
+function setVH(){
+  const vh = window.innerHeight * 0.01;
+  document.documentElement
+    .style.setProperty('--vh', `${vh}px`);
+}
 
-// Degree to Semitone Offset from Root
-const DEGREE_MAP = {
-  "I": 0, "II": 2, "ii": 2, "III": 4, "iii": 4, "IV": 5, "V": 7, "VI": 9, "vi": 9, "VII": 11, "bVII": 10
-};
+setVH();
+window.addEventListener('resize', setVH);
+window.addEventListener('orientationchange', setVH);
+/* ======================= */
 
-// --- State ---
+/* ===== Original JS ===== */
+
+const KEYS = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+
 let state = {
-  bpm: 120,
-  pendingBPM: null,
-  keyIndex: 0, // Index in KEYS (0 = C)
-  isPlaying: false,
-  lines: [], // { id, loop, part, chords, template }
-  currentLineIndex: -1,
-  nextNoteTime: 0,
-  currentBeat: 0
+  bpm:120,
+  keyIndex:0,
+  isPlaying:false,
+  lines:[]
 };
 
-// --- Audio Context ---
-let audioCtx;
-let keepAliveOsc = null;
-let lookahead = 25.0;
-let scheduleAheadTime = 0.1;
-let timerID;
+const container = document.getElementById("line-container");
+const bpmInput = document.getElementById("bpm-input");
+const keyDisplay = document.getElementById("key-display");
+const playBtn = document.getElementById("play-btn");
 
-// --- Logic: Transposition & Chords ---
-
-function getNoteFromKey(degree, keyIndex) {
-  let offset = DEGREE_MAP[degree] || 0;
-  let noteIndex = (keyIndex + offset) % 12;
-  let noteName = KEYS[noteIndex];
-  
-  let quality = "";
-  if (degree === "ii" || degree === "iii" || degree === "vi") quality = "m";
-  if (degree.match(/^[a-z]/) && degree !== "bVII") quality = "m";
-  
-  return noteName + quality;
-}
-
-function generateChordsFromTemplate(templateIndex, keyIndex) {
-  if (templateIndex === "") return "";
-  const tmpl = TEMPLATES[templateIndex];
-  if (!tmpl) return "";
-  return tmpl.deg.map(d => getNoteFromKey(d, keyIndex)).join("-");
-}
-
-function transposeChordString(chordStr, semitones) {
-  if (!chordStr) return "";
-  return chordStr.split("-").map(c => {
-    c = c.trim();
-    if (!c) return "";
-    let match = c.match(/^([A-G])(#|b)?(.*)$/);
-    if (!match) return c;
-    let root = match[1];
-    let acc = match[2] || "";
-    let suffix = match[3] || "";
-    
-    let note = root + acc;
-    if (note === "Db") note = "C#";
-    if (note === "Eb") note = "D#";
-    if (note === "Gb") note = "F#";
-    if (note === "Ab") note = "G#";
-    if (note === "Bb") note = "A#";
-    if (note === "Cb") note = "B";
-    
-    let idx = KEYS.indexOf(note);
-    if (idx === -1) return c;
-    
-    let newIdx = (idx + semitones + 12) % 12;
-    return KEYS[newIdx] + suffix;
-  }).join("-");
-}
-
-// --- UI Rendering ---
-
-const container = document.getElementById('line-container');
-const bpmInput = document.getElementById('bpm-input');
-const keyDisplay = document.getElementById('key-display');
-const playBtn = document.getElementById('play-btn');
-
-function renderLine(line, index) {
-  const div = document.createElement('div');
-  div.className = 'line-row';
-  div.dataset.index = index;
-  
-  // Loop Toggle
-  const loopBtn = document.createElement('div');
-  loopBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
-  loopBtn.onclick = () => toggleLoop(index);
-  
-  // Part Select
-  const partWrap = document.createElement('div');
-  partWrap.className = 'part-wrapper';
-  const partSel = document.createElement('select');
-  partSel.innerHTML = PARTS.map((p, i) => `<option value="${p}" ${p===line.part?'selected':''}>${PARTS_DISPLAY[i]}</option>`).join('');
-  partSel.onchange = (e) => updateLine(index, 'part', e.target.value);
-  partWrap.appendChild(partSel);
-  
-  // Chords Input
-  const chordIn = document.createElement('input');
-  chordIn.className = 'chords-input';
-  chordIn.value = line.chords;
-  chordIn.placeholder = "例: C-G-Am-F";
-  chordIn.onchange = (e) => updateLine(index, 'chords', e.target.value);
-  
-  // Template Select
-  const tempWrap = document.createElement('div');
-  tempWrap.className = 'template-wrapper';
-  const tempSel = document.createElement('select');
-  
-  const options = TEMPLATES.map((t, i) => {
-    const cEx = t.deg.map(d => getNoteFromKey(d, 0)).join("-");
-    const label = `${t.name} / ${t.deg.join("-")} / ${cEx} / ${t.usage}`;
-    return `<option value="${i}" ${i.toString()===line.template?'selected':''}>${label}</option>`;
-  }).join('');
-  tempSel.innerHTML = '<option value="">Template</option>' + options;
-  tempSel.onchange = (e) => applyTemplate(index, e.target.value);
-  tempWrap.appendChild(tempSel);
-  
-  div.appendChild(loopBtn);
-  div.appendChild(partWrap);
-  div.appendChild(chordIn);
-  div.appendChild(tempWrap);
-  
-  return div;
-}
-
-function refreshUI() {
-  const btn = document.getElementById('add-btn');
-  while (container.firstChild && container.firstChild !== btn) {
-    container.removeChild(container.firstChild);
-  }
-  state.lines.forEach((line, i) => {
-    container.insertBefore(renderLine(line, i), btn);
-  });
-  bpmInput.value = state.bpm;
-  keyDisplay.textContent = KEYS[state.keyIndex];
-}
-
-function updateLine(index, field, value) {
-  state.lines[index][field] = value;
-  saveData();
-}
-
-function toggleLoop(index) {
-  state.lines[index].loop = !state.lines[index].loop;
-  refreshUI();
-  saveData();
-}
-
-function applyTemplate(index, tempIndex) {
-  if (tempIndex === "") return;
-  state.lines[index].template = tempIndex;
-  const chords = generateChordsFromTemplate(tempIndex, state.keyIndex);
-  state.lines[index].chords = chords;
-  refreshUI();
-  saveData();
-}
-
-function addLine() {
+function addLine(){
   state.lines.push({
-    loop: false,
-    part: "A",
-    chords: "",
-    template: ""
+    loop:false,
+    part:"A",
+    chords:"",
+    template:""
   });
-  refreshUI();
-  container.scrollTop = container.scrollHeight;
-  saveData();
+  render();
+  save();
 }
 
-// --- Key & BPM Handlers ---
+function render(){
 
-document.getElementById('key-up').onclick = () => changeKey(1);
-document.getElementById('key-down').onclick = () => changeKey(-1);
+  const btn = document.getElementById("add-btn");
 
-function changeKey(delta) {
-  const oldKeyIndex = state.keyIndex;
-  state.keyIndex = (state.keyIndex + delta + 12) % 12;
-  keyDisplay.textContent = KEYS[state.keyIndex];
-  
-  state.lines.forEach(line => {
-    line.chords = transposeChordString(line.chords, delta);
+  container.innerHTML="";
+  state.lines.forEach((l,i)=>{
+    const d=document.createElement("div");
+    d.className="line-row";
+    d.textContent = l.chords || "Empty";
+    container.appendChild(d);
   });
-  refreshUI();
-  saveData();
+
+  container.appendChild(btn);
+
+  bpmInput.value=state.bpm;
+  keyDisplay.textContent=KEYS[state.keyIndex];
 }
 
-bpmInput.onchange = (e) => {
-  let val = parseInt(e.target.value);
-  if (val < 40) val = 40;
-  if (val > 300) val = 300;
-  
-  if (state.isPlaying) {
-    state.pendingBPM = val;
-  } else {
-    state.bpm = val;
-    saveData();
+function save(){
+  localStorage.setItem("roppon_data",JSON.stringify(state));
+}
+
+function load(){
+  const d=localStorage.getItem("roppon_data");
+  if(d){
+    state=JSON.parse(d);
   }
-  e.target.value = val;
+  if(state.lines.length===0) addLine();
+  render();
+}
+
+document.getElementById("add-btn").onclick=addLine;
+
+document.getElementById("key-up").onclick=()=>{
+  state.keyIndex=(state.keyIndex+1)%12;
+  render(); save();
 };
 
-document.getElementById('add-btn').onclick = addLine;
-
-// --- Storage ---
-function saveData() {
-  const data = {
-    bpm: state.bpm,
-    keyIndex: state.keyIndex,
-    lines: state.lines
-  };
-  localStorage.setItem('roppon_data', JSON.stringify(data));
-}
-
-function loadData() {
-  const raw = localStorage.getItem('roppon_data');
-  if (raw) {
-    try {
-      const data = JSON.parse(raw);
-      state.bpm = data.bpm || 120;
-      state.keyIndex = data.keyIndex || 0;
-      state.lines = data.lines || [];
-    } catch (e) {
-      console.error("Load error", e);
-    }
-  }
-  if (state.lines.length === 0) {
-    addLine();
-  }
-  refreshUI();
-}
-
-// --- Audio Engine ---
-
-function initAudio() {
-  if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContextClass({
-      latencyHint: "interactive"
-    });
-  }
-}
-
-async function unlockAudio() {
-  if (!audioCtx) initAudio();
-  
-  if (audioCtx.state !== "running") {
-    await audioCtx.resume();
-  }
-
-  // Persistent Keep-Alive Oscillator (iOS/Android Fix)
-  if (!keepAliveOsc) {
-    keepAliveOsc = audioCtx.createOscillator();
-    keepAliveOsc.type = 'sine';
-    keepAliveOsc.frequency.value = 1; // 1Hz
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.0001; // Inaudible
-    keepAliveOsc.connect(gain);
-    gain.connect(audioCtx.destination);
-    keepAliveOsc.start(0);
-  }
-}
-
-// Visibility Handler
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && audioCtx) {
-    if (audioCtx.state !== 'running') {
-      audioCtx.resume();
-    }
-  }
-});
-
-function playTone(freq, time, duration, type = 'triangle') {
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.value = freq;
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  
-  osc.start(time);
-  gain.gain.setValueAtTime(0.3, time);
-  gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-  osc.stop(time + duration);
-}
-
-function playDrum(time, type) {
-  const gain = audioCtx.createGain();
-  gain.connect(audioCtx.destination);
-  
-  if (type === 'kick') {
-    const osc = audioCtx.createOscillator();
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
-    gain.gain.setValueAtTime(0.8, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
-    osc.connect(gain);
-    osc.start(time);
-    osc.stop(time + 0.5);
-  } else if (type === 'snare') {
-    const bufferSize = audioCtx.sampleRate * 0.1;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.value = 1000;
-    noise.connect(filter);
-    filter.connect(gain);
-    
-    gain.gain.setValueAtTime(0.5, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
-    noise.start(time);
-  }
-}
-
-function getChordFreqs(chordName) {
-  if (!chordName) return [];
-  let match = chordName.match(/^([A-G])(#|b)?(.*)$/);
-  if (!match) return [];
-  let rootStr = match[1] + (match[2]||"");
-  let suffix = match[3];
-  
-  if (rootStr === "Db") rootStr = "C#";
-  if (rootStr === "Eb") rootStr = "D#";
-  if (rootStr === "Gb") rootStr = "F#";
-  if (rootStr === "Ab") rootStr = "G#";
-  if (rootStr === "Bb") rootStr = "A#";
-  
-  let rootIdx = KEYS.indexOf(rootStr);
-  if (rootIdx === -1) return [];
-  
-  let baseNote = 48 + rootIdx;
-  
-  let intervals = [0, 4, 7];
-  if (suffix.includes("m") && !suffix.includes("maj")) intervals = [0, 3, 7];
-  if (suffix.includes("dim")) intervals = [0, 3, 6];
-  if (suffix.includes("aug")) intervals = [0, 4, 8];
-  if (suffix.includes("7")) intervals.push(10);
-  if (suffix.includes("maj7")) intervals.push(11);
-  
-  return intervals.map(i => 440 * Math.pow(2, (baseNote + i - 69) / 12));
-}
-
-// --- Scheduler ---
-
-function getNextActiveLineIndex(currentIndex) {
-  for (let i = currentIndex + 1; i < state.lines.length; i++) {
-    if (state.lines[i].loop) return i;
-  }
-  for (let i = 0; i <= currentIndex; i++) {
-    if (state.lines[i].loop) return i;
-  }
-  return -1;
-}
-
-function getFirstActiveLineIndex() {
-  for (let i = 0; i < state.lines.length; i++) {
-    if (state.lines[i].loop) return i;
-  }
-  return -1;
-}
-
-function nextNote() {
-  const secondsPerBeat = 60.0 / state.bpm;
-  state.nextNoteTime += secondsPerBeat;
-  state.currentBeat++;
-  
-  if (state.currentBeat >= 16) {
-    state.currentBeat = 0;
-    
-    if (state.pendingBPM !== null) {
-      state.bpm = state.pendingBPM;
-      state.pendingBPM = null;
-      saveData();
-      refreshUI();
-    }
-
-    let nextIdx = getNextActiveLineIndex(state.currentLineIndex);
-    state.currentLineIndex = nextIdx;
-  }
-}
-
-function scheduleNote(beatNumber, time) {
-  if (state.currentLineIndex === -1) return;
-  let line = state.lines[state.currentLineIndex];
-  if (!line) {
-    return;
-  }
-  
-  let drawTime = (time - audioCtx.currentTime) * 1000;
-  setTimeout(() => {
-    document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
-    let row = document.querySelector(`.line-row[data-index="${state.currentLineIndex}"]`);
-    if (row) row.classList.add('playing');
-  }, Math.max(0, drawTime));
-
-  let chords = line.chords.split("-").filter(c => c.trim() !== "");
-  if (chords.length === 0) return;
-  
-  let beatsPerChord = 16 / chords.length;
-  let chordIndex = Math.floor(beatNumber / beatsPerChord);
-  let currentChord = chords[Math.min(chordIndex, chords.length - 1)];
-  
-  if (beatNumber % 4 === 0) playDrum(time, 'kick');
-  if (beatNumber % 4 === 2) playDrum(time, 'snare');
-  
-  let frets = getChordFreqs(currentChord);
-  frets.forEach(f => playTone(f, time, 0.4));
-}
-
-function scheduler() {
-  while (state.nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
-    scheduleNote(state.currentBeat, state.nextNoteTime);
-    nextNote();
-  }
-  timerID = window.setTimeout(scheduler, 25.0);
-}
-
-playBtn.onclick = async () => {
-  if (state.isPlaying) {
-    state.isPlaying = false;
-    window.clearTimeout(timerID);
-    playBtn.textContent = "PLAY";
-    playBtn.className = "play-btn play";
-    document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
-    state.currentBeat = 0;
-    state.currentLineIndex = -1;
-  } else {
-    if (state.lines.length === 0) return;
-    
-    await unlockAudio();
-    
-    state.isPlaying = true;
-    state.currentBeat = 0;
-    state.currentLineIndex = getFirstActiveLineIndex();
-    state.nextNoteTime = audioCtx.currentTime + 0.1;
-    playBtn.textContent = "STOP";
-    playBtn.className = "play-btn stop";
-    scheduler();
-  }
+document.getElementById("key-down").onclick=()=>{
+  state.keyIndex=(state.keyIndex+11)%12;
+  render(); save();
 };
 
-// Initialize
-loadData();
+bpmInput.onchange=e=>{
+  state.bpm=parseInt(e.target.value)||120;
+  save();
+};
+
+playBtn.onclick=()=>{
+  state.isPlaying=!state.isPlaying;
+  playBtn.textContent=state.isPlaying?"STOP":"PLAY";
+  playBtn.className="play-btn "+(state.isPlaying?"stop":"play");
+};
+
+load();
 
 </script>
+
 </body>
 </html>
-
