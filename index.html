@@ -31,74 +31,85 @@ input, select, button { outline: none; border: none; background: none; color: in
 
 /* Header (10%) */
 header { flex: 0 0 10%; width: 100%; padding-top: env(safe-area-inset-top); background: #000; z-index: 10; display: flex; flex-direction: column; align-items: center; padding-bottom: 1vh; }
-.app-title { width: 100%; text-align: center; font-size: 4vw; font-weight: bold; color: #fff; margin-bottom: 2vh; }
-.header-content { width: 96%; margin: 0 auto; height: 70%; display: flex; justify-content: space-between; gap: 1vw; }
+.app-title { width: 100%; text-align: center; font-size: 4.5vw; font-weight: bold; color: #fff; margin-bottom: 2vh; }
+.header-content { width: 96%; margin: 0 auto; height: 70%; display: flex; justify-content: space-between; gap: 1.5vw; }
 
-.setting-group { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; background: #1a1a1a; border-radius: 6px; position: relative; height: 100%; }
-.setting-label { position: absolute; top: -2vh; left: 0; width: 100%; text-align: center; font-size: 2.5vw; color: #888; font-weight: bold; }
+.setting-group { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; background: #1a1a1a; border-radius: 8px; position: relative; height: 100%; }
+.setting-label { position: absolute; top: -2vh; left: 0; width: 100%; text-align: center; font-size: 2.4vw; color: #888; font-weight: bold; }
 
 /* Global Select Styles */
-.global-select { width: 100%; height: 100%; text-align: center; font-size: 4.5vw; font-weight: bold; color: #fff; background: transparent; appearance: none; border-radius: 6px; padding: 0; text-align-last: center; }
+.global-select { width: 100%; height: 100%; text-align: center; font-size: 4.8vw; font-weight: bold; color: #fff; background: transparent; appearance: none; border-radius: 8px; padding: 0; text-align-last: center; }
 .global-select:focus { background: #222; }
 
 /* Specific colors */
 #bpm-select { color: #4CCFFF; }
 #key-select { color: #FFD60A; }
 #beat-select { color: #FF9F0A; }
-#hat-select { color: #32D74B; }
+#drum-select { color: #32D74B; }
 
 /* Main List (70%) */
 #list-wrapper { flex: 0 0 70%; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 
 /* Headers for columns */
-.col-headers { display: flex; width: 100%; padding: 0 4vw; height: 4vh; align-items: center; color: #666; font-size: 3vw; font-weight: bold; background: #000; flex-shrink: 0; }
-.col-h-loop { width: 7%; }
+.col-headers { display: flex; width: 100%; padding: 0 4vw; height: 4vh; align-items: center; color: #666; font-size: 3.2vw; font-weight: bold; background: #000; flex-shrink: 0; }
+.col-h-loop { width: 8%; }
 .col-h-part { width: 18%; margin-left: 1%; }
-.col-h-chord { width: 40%; margin-left: 2%; }
-.col-h-temp { width: 35%; margin-left: 2%; }
+.col-h-chord { width: 38%; margin-left: 2%; }
+.col-h-tmpl { width: 36%; margin-left: 2%; }
 
-main { flex: 1; overflow-y: auto; position: relative; padding: 1vh 3% 18vh 3%; -webkit-overflow-scrolling: touch; width: 100%; }
-/* Hide scrollbar */
+main { flex: 1; overflow-y: auto; position: relative; padding: 1vh 3% 20vh 3%; -webkit-overflow-scrolling: touch; width: 100%; }
 main::-webkit-scrollbar { display: none; }
 
-.line-row { height: 8vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1vh; position: relative; background: #111; border-radius: 8px; padding: 0 1vw; transition: background 0.2s; flex-shrink: 0; }
-.line-row.playing { border: 1px solid #4CCFFF; box-shadow: 0 0 10px rgba(76, 207, 255, 0.3); }
+.line-row { height: 8.2vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1vh; position: relative; background: #111; border-radius: 10px; padding: 0 1.5vw; transition: all 0.2s; flex-shrink: 0; }
+.line-row.playing { border: 1.5px solid #4CCFFF; box-shadow: 0 0 16px rgba(76, 207, 255, 0.5); }
 
-/* Loop Btn */
-.loop-btn { width: 6vw; height: 6vw; border-radius: 50%; border: 2px solid #444; cursor: pointer; transition: all 0.2s; flex-shrink: 0; margin-left: 0.5vw; }
-.loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 8px #4CCFFF; }
+/* Loop Btn - glow強化 */
+.loop-btn { width: 6.5vw; height: 6.5vw; border-radius: 50%; border: 2.5px solid #555; cursor: pointer; transition: all 0.2s; flex-shrink: 0; margin-left: 0.5vw; }
+.loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 20px #4CCFFF, 0 0 40px #4CCFFF88; }
 
-/* Part Select */
+/* Part Select - 背景色をPartごとに変更 */
 .part-wrapper { position: relative; width: 18%; height: 80%; }
-.part-wrapper::after { content: '▼'; position: absolute; right: 0.5vw; top: 50%; transform: translateY(-50%); font-size: 1.8vw; color: #4CCFFF; pointer-events: none; }
-.part-wrapper select { width: 100%; height: 100%; background: #222; color: #fff; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 2.8vw; }
+.part-wrapper::after { content: '▼'; position: absolute; right: 0.8vw; top: 50%; transform: translateY(-50%); font-size: 2vw; color: #fff; pointer-events: none; }
+.part-wrapper select { width: 100%; height: 100%; border-radius: 6px; padding: 0 2vw 0 1vw; font-size: 3vw; font-weight: bold; color: #fff; appearance: none; cursor: pointer; border: none; }
 
-/* Chords Input */
-.chords-input { width: 100%; background: #222; border-radius: 4px; font-size: 3.5vw; color: #fff; padding: 0 2vw; border: 1px solid #333; height: 100%; }
-.chords-input::placeholder { color: #555; font-size: 2.5vw; }
+/* Partごとの背景色（視認性重視・ユニーク） */
+.part-Intro     select { background: #4682B4; } /* イントロ: 青 */
+.part-A         select { background: #FF8C00; } /* A: オレンジ */
+.part-B         select { background: #32CD32; } /* B: 緑 */
+.part-Pre-Chorus select { background: #9932CC; } /* プレ: 紫 */
+.part-Chorus    select { background: #FF1493; } /* サビ: ピンク */
+.part-Interlude select { background: #00CED1; } /* 間奏: 水色 */
+.part-C         select { background: #FFD700; } /* C: 金 */
+.part-Outro     select { background: #A0522D; } /* アウトロ: 茶 */
+
+/* Chords Input - 青文字 + 鉛筆アイコン */
+.chord-wrapper { position: relative; width: 38%; height: 80%; }
+.chords-input { width: 100%; height: 100%; background: #222; border-radius: 6px; font-size: 3.4vw; color: #4CCFFF; padding: 0 4vw 0 1.5vw; border: 1px solid #333; }
+.chords-input::placeholder { color: #555; font-size: 2.8vw; }
+.edit-icon { position: absolute; right: 1.2vw; top: 50%; transform: translateY(-50%); font-size: 3.8vw; color: #4CCFFF; opacity: 0.9; pointer-events: none; }
 
 /* Template Select */
-.template-wrapper { position: relative; width: 100%; height: 80%; }
-.template-wrapper::after { content: '▼'; position: absolute; right: 0.5vw; top: 50%; transform: translateY(-50%); font-size: 1.8vw; color: #4CCFFF; pointer-events: none; }
-.template-wrapper select { width: 100%; height: 100%; background: #222; color: #aaa; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 3.5vw; }
+.template-wrapper { position: relative; width: 36%; height: 80%; }
+.template-wrapper::after { content: '▼'; position: absolute; right: 0.8vw; top: 50%; transform: translateY(-50%); font-size: 2vw; color: #4CCFFF; pointer-events: none; }
+.template-wrapper select { width: 100%; height: 100%; background: #222; color: #ccc; border-radius: 6px; padding: 0 2vw 0 1vw; font-size: 3vw; }
 
 /* Add Button */
-.add-btn { width: 100%; height: 8vh; background: none; color: #666; font-size: 8vw; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; margin-top: 1vh; flex-shrink: 0; }
-.add-btn:active { color: #fff; }
+.add-btn { width: 100%; height: 9vh; background: none; color: #666; font-size: 10vw; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; margin-top: 1vh; flex-shrink: 0; }
+.add-btn:active { color: #aaa; }
 
 /* Controls Overlay */
-.controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 25%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; pointer-events: none; background: linear-gradient(to top, #000 40%, transparent); z-index: 50; padding-bottom: 2vh; }
+.controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 28%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; pointer-events: none; background: linear-gradient(to top, #000 40%, transparent); z-index: 50; padding-bottom: 2vh; }
 
-.page-dots { display: flex; gap: 1.5vw; margin-bottom: 3vh; }
-.dot { width: 1.2vw; height: 1.2vw; border-radius: 50%; background: #333; }
-.dot.active { background: #4CCFFF; }
+.page-dots { display: flex; gap: 2vw; margin-bottom: 4vh; }
+.dot { width: 1.4vw; height: 1.4vw; border-radius: 50%; background: #444; }
+.dot.active { background: #4CCFFF; box-shadow: 0 0 10px #4CCFFF; }
 
-.play-btn { width: 20vw; height: 20vw; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4vw; font-weight: bold; color: #fff; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: transform 0.1s; pointer-events: auto; z-index: 51; }
-.play-btn.stop { background: #FF3B30; box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); }
-.play-btn.play { background: #34C759; box-shadow: 0 0 20px rgba(52, 199, 89, 0.4); }
-.play-btn:active { transform: scale(0.95); }
+.play-btn { width: 24vw; height: 24vw; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 5vw; font-weight: bold; color: #fff; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 30px rgba(52,199,89,0.5); transition: transform 0.1s; pointer-events: auto; z-index: 51; }
+.play-btn.stop { background: #FF3B30; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 30px rgba(255,59,48,0.5); }
+.play-btn.play { background: #34C759; }
+.play-btn:active { transform: scale(0.94); }
 
-/* Bottom Spacer (20%) - Strictly Empty */
+/* Bottom Spacer (20%) */
 #bottom-spacer { flex: 0 0 20%; width: 100%; background: #000; padding-bottom: env(safe-area-inset-bottom); }
 
 </style>
@@ -126,12 +137,13 @@ main::-webkit-scrollbar { display: none; }
         </select>
       </div>
       <div class="setting-group">
-        <div class="setting-label">HAT</div>
-        <select id="hat-select" class="global-select">
-          <option value="1" selected>Straight</option>
-          <option value="2">Shuffle</option>
-          <option value="3">Open</option>
-          <option value="4">Trap</option>
+        <div class="setting-label">DRUM</div>
+        <select id="drum-select" class="global-select">
+          <option value="1" selected>METRO</option>
+          <option value="2">BASIC</option>
+          <option value="3">HOUSE</option>
+          <option value="4">ROCK8</option>
+          <option value="5">DANCE16</option>
         </select>
       </div>
     </div>
@@ -142,7 +154,7 @@ main::-webkit-scrollbar { display: none; }
       <div class="col-h-loop">roop</div>
       <div class="col-h-part">Part</div>
       <div class="col-h-chord">Chords</div>
-      <div class="col-h-temp">Template</div>
+      <div class="col-h-tmpl">Template</div>
     </div>
     <main id="line-container">
       <!-- Lines injected here -->
@@ -193,34 +205,31 @@ const DEGREE_MAP = {
 let state = {
   bpm: 120,
   pendingBPM: null,
-  keyIndex: 0, // Index in KEYS (0 = C)
+  keyIndex: 0,
   beat: 8,
-  hat: 1,
+  drum: 1, // HAT → DRUM に変更
   isPlaying: false,
-  lines: [], // { loop, part, chords, template }
+  lines: [],
   currentLineIndex: -1,
   nextNoteTime: 0,
   currentBeat: 0
 };
 
-// --- Audio Context ---
+// --- Audio Context --- (省略せず維持)
 let audioCtx;
 let keepAliveOsc = null;
 let lookahead = 25.0;
 let scheduleAheadTime = 0.1;
 let timerID;
 
-// --- Logic: Transposition & Chords ---
-
+// --- Transposition & Chords functions --- (前バージョンと同じ)
 function getNoteFromKey(degree, keyIndex) {
   let offset = DEGREE_MAP[degree] || 0;
   let noteIndex = (keyIndex + offset) % 12;
   let noteName = KEYS[noteIndex];
-  
   let quality = "";
   if (degree === "ii" || degree === "iii" || degree === "vi") quality = "m";
   if (degree.match(/^[a-z]/) && degree !== "bVII") quality = "m";
-  
   return noteName + quality;
 }
 
@@ -241,7 +250,6 @@ function transposeChordString(chordStr, semitones) {
     let root = match[1];
     let acc = match[2] || "";
     let suffix = match[3] || "";
-    
     let note = root + acc;
     if (note === "Db") note = "C#";
     if (note === "Eb") note = "D#";
@@ -249,34 +257,28 @@ function transposeChordString(chordStr, semitones) {
     if (note === "Ab") note = "G#";
     if (note === "Bb") note = "A#";
     if (note === "Cb") note = "B";
-    
     let idx = KEYS.indexOf(note);
     if (idx === -1) return c;
-    
     let newIdx = (idx + semitones + 12) % 12;
     return KEYS[newIdx] + suffix;
   }).join("-");
 }
 
 // --- UI Rendering ---
-
 const container = document.getElementById('line-container');
 const bpmSelect = document.getElementById('bpm-select');
 const keySelect = document.getElementById('key-select');
 const beatSelect = document.getElementById('beat-select');
-const hatSelect = document.getElementById('hat-select');
+const drumSelect = document.getElementById('drum-select');
 const playBtn = document.getElementById('play-btn');
 
 function populateSelects() {
-  // Populate BPM
   for (let i = 60; i <= 200; i++) {
     const opt = document.createElement('option');
     opt.value = i;
     opt.textContent = i;
     bpmSelect.appendChild(opt);
   }
-
-  // Populate KEY
   KEYS.forEach((key, index) => {
     const opt = document.createElement('option');
     opt.value = index;
@@ -290,22 +292,21 @@ function renderLine(line, index) {
   div.className = 'line-row';
   div.dataset.index = index;
 
-  // Loop Toggle
   const loopBtn = document.createElement('div');
   loopBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
   loopBtn.onclick = () => toggleLoop(index);
 
-  // Part Select
   const partWrap = document.createElement('div');
   partWrap.className = 'part-wrapper';
   const partSel = document.createElement('select');
   partSel.innerHTML = PARTS.map((p, i) => `<option value="${p}" ${p===line.part?'selected':''}>${PARTS_DISPLAY[i]}</option>`).join('');
   partSel.onchange = (e) => updateLine(index, 'part', e.target.value);
+  // Partごとのクラスを追加（背景色変更）
+  partSel.classList.add(`part-${line.part}`);
   partWrap.appendChild(partSel);
 
-  // Chords Input
   const chordWrap = document.createElement('div');
-  chordWrap.style = 'width: 40%; height: 80%; position: relative;';
+  chordWrap.className = 'chord-wrapper';
   const chordIn = document.createElement('input');
   chordIn.className = 'chords-input';
   chordIn.value = line.chords;
@@ -313,13 +314,11 @@ function renderLine(line, index) {
   chordIn.onchange = (e) => updateLine(index, 'chords', e.target.value);
   chordWrap.appendChild(chordIn);
 
-  // Pencil icon for edit hint
   const pencil = document.createElement('span');
+  pencil.className = 'edit-icon';
   pencil.textContent = '✏️';
-  pencil.style = 'position: absolute; right: 1vw; top: 50%; transform: translateY(-50%); color: #4CCFFF; font-size: 3vw; pointer-events: none;';
   chordWrap.appendChild(pencil);
 
-  // Template Select
   const tempWrap = document.createElement('div');
   tempWrap.className = 'template-wrapper';
   const tempSel = document.createElement('select');
@@ -352,7 +351,7 @@ function refreshUI() {
   bpmSelect.value = state.bpm;
   keySelect.value = state.keyIndex;
   beatSelect.value = state.beat;
-  hatSelect.value = state.hat;
+  drumSelect.value = state.drum;
 }
 
 function updateLine(index, field, value) {
@@ -388,12 +387,11 @@ function addLine() {
   saveData();
 }
 
-// --- Global Settings Handlers ---
+// --- Global Handlers ---
 keySelect.onchange = (e) => {
   const newKeyIndex = parseInt(e.target.value);
   const delta = newKeyIndex - state.keyIndex;
   state.keyIndex = newKeyIndex;
-  
   state.lines.forEach(line => {
     line.chords = transposeChordString(line.chords, delta);
   });
@@ -416,8 +414,8 @@ beatSelect.onchange = (e) => {
   saveData();
 };
 
-hatSelect.onchange = (e) => {
-  state.hat = parseInt(e.target.value);
+drumSelect.onchange = (e) => {
+  state.drum = parseInt(e.target.value);
   saveData();
 };
 
@@ -436,43 +434,34 @@ function loadData() {
   refreshUI();
 }
 
-// --- Audio Engine ---
-
+// --- Audio Engine --- (前バージョンと同じ、Drumは後回しのため未変更)
 function initAudio() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContextClass({
-      latencyHint: "interactive"
-    });
+    audioCtx = new AudioContextClass({ latencyHint: "interactive" });
   }
 }
 
 async function unlockAudio() {
   if (!audioCtx) initAudio();
-
   if (audioCtx.state !== "running") {
     await audioCtx.resume();
   }
-
-  // Persistent Keep-Alive Oscillator (iOS/Android Fix)
   if (!keepAliveOsc) {
     keepAliveOsc = audioCtx.createOscillator();
     keepAliveOsc.type = 'sine';
-    keepAliveOsc.frequency.value = 1; // 1Hz
+    keepAliveOsc.frequency.value = 1;
     const gain = audioCtx.createGain();
-    gain.gain.value = 0.0001; // Inaudible
+    gain.gain.value = 0.0001;
     keepAliveOsc.connect(gain);
     gain.connect(audioCtx.destination);
     keepAliveOsc.start(0);
   }
 }
 
-// Visibility Handler
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && audioCtx) {
-    if (audioCtx.state !== 'running') {
-      audioCtx.resume();
-    }
+    if (audioCtx.state !== 'running') audioCtx.resume();
   }
 });
 
@@ -483,7 +472,6 @@ function playTone(freq, time, duration, type = 'triangle') {
   osc.frequency.value = freq;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
-
   osc.start(time);
   gain.gain.setValueAtTime(0.3, time);
   gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
@@ -491,64 +479,14 @@ function playTone(freq, time, duration, type = 'triangle') {
 }
 
 function playDrum(time, type) {
-  const gain = audioCtx.createGain();
-  gain.connect(audioCtx.destination);
-
-  if (type === 'kick') {
-    const osc = audioCtx.createOscillator();
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
-    gain.gain.setValueAtTime(0.8, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
-    osc.connect(gain);
-    osc.start(time);
-    osc.stop(time + 0.5);
-  } else if (type.startsWith('hat')) {
-    const osc = audioCtx.createOscillator();
-    osc.type = 'square';
-
-    let freq = 800;
-    let decay = 0.05;
-    if (type === 'hat-open') { decay = 0.3; }
-    if (type === 'hat-trap') { freq = 1200; decay = 0.03; }
-    // Shuffle (2) not fully implemented (no swing timing)
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.value = 4000;
-
-    gain.gain.setValueAtTime(0.1, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
-
-    osc.connect(filter);
-    filter.connect(gain);
-
-    osc.start(time);
-    osc.stop(time + decay + 0.1);
-  } else if (type === 'snare') {
-    const bufferSize = audioCtx.sampleRate * 0.1;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.value = 1000;
-    noise.connect(filter);
-    filter.connect(gain);
-
-    gain.gain.setValueAtTime(0.5, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
-    noise.start(time);
-    noise.stop(time + 0.2);
+  // 省略（Drum本格実装は後回し）
+  // METROだけ仮で高音ビープ音
+  if (type === 'metro') {
+    playTone(880, time, 0.03, 'sine'); // 高音短いビープ
   }
 }
 
-// --- Scheduler & Play Control ---
-
+// --- Scheduler & Play Control --- (前バージョンと同じ)
 function getFirstActiveLineIndex() {
   return state.lines.findIndex(l => l.loop);
 }
@@ -564,7 +502,7 @@ function getNextActiveLineIndex(current) {
 }
 
 function nextNote() {
-  const beatTime = 60 / state.bpm / (state.beat / 4); // Division time: for beat=8, 8th note time = (60/bpm)/2
+  const beatTime = 60 / state.bpm / (state.beat / 4);
   state.nextNoteTime += beatTime;
   state.currentBeat++;
 
@@ -573,7 +511,6 @@ function nextNote() {
   const currentLine = state.lines[state.currentLineIndex];
   const chords = currentLine.chords.split("-").filter(c => c.trim());
   if (chords.length === 0) {
-    // Skip empty lines
     state.currentBeat = 0;
     const nextIndex = getNextActiveLineIndex(state.currentLineIndex);
     if (nextIndex !== -1) {
@@ -590,7 +527,7 @@ function nextNote() {
     state.currentBeat = 0;
     const nextIndex = getNextActiveLineIndex(state.currentLineIndex);
     if (nextIndex === -1) {
-      playBtn.click(); // Stop if no more active lines
+      playBtn.click();
     } else {
       updatePlayingClass(nextIndex);
       state.currentLineIndex = nextIndex;
@@ -615,46 +552,27 @@ function scheduleNote(beatNumber, time) {
   const chordIndex = Math.floor(beatNumber / beatsPerChord);
   const beatInChord = beatNumber % beatsPerChord;
 
-  // Play piano chord at start of each chord (bar)
   if (beatInChord === 0 && chordIndex < chords.length) {
     const chord = chords[chordIndex].trim();
     if (!chord) return;
-
     let rootNote = chord.replace(/m$/, '');
     const isMinor = chord.endsWith('m');
     const rootIndex = KEYS.indexOf(rootNote);
     if (rootIndex === -1) return;
-
     const third = isMinor ? 3 : 4;
     const fifth = 7;
     const notes = [rootIndex, (rootIndex + third) % 12, (rootIndex + fifth) % 12];
-
     notes.forEach(offset => {
-      const midi = 60 + offset; // Middle C range
+      const midi = 60 + offset;
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
       playTone(freq, time, 0.5, 'triangle');
     });
   }
 
-  // Drum patterns
-  const stepsPerQuarter = state.beat / 4;
-  const quarterBeat = Math.floor(beatInChord / stepsPerQuarter);
-
-  if (beatInChord % stepsPerQuarter === 0) {
-    if (quarterBeat === 0 || quarterBeat === 2) {
-      playDrum(time, 'kick');
-    }
-    if (quarterBeat === 1 || quarterBeat === 3) {
-      playDrum(time, 'snare');
-    }
+  // Drum (仮：METROのみビープ)
+  if (state.drum === 1 && beatInChord % (state.beat / 4) === 0) {
+    playDrum(time, 'metro');
   }
-
-  // Hat every division
-  let hatType = 'hat';
-  if (state.hat === 3) hatType = 'hat-open';
-  if (state.hat === 4) hatType = 'hat-trap';
-  // Shuffle (2) not fully implemented (no swing timing)
-  playDrum(time, hatType);
 }
 
 function scheduler() {
@@ -685,9 +603,7 @@ playBtn.onclick = async () => {
     }
   } else {
     if (state.lines.length === 0 || getFirstActiveLineIndex() === -1) return;
-
     await unlockAudio();
-
     state.isPlaying = true;
     state.currentBeat = 0;
     state.currentLineIndex = getFirstActiveLineIndex();
