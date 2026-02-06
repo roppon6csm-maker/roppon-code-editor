@@ -6,70 +6,41 @@
 <meta name="screen-orientation" content="portrait">
 <title>Roppon Code Editor</title>
 <style>
+/* 前回と同じCSS（省略してスペース節約） */
 * { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 body { background:#000; color:#fff; overflow:hidden; height:100vh; touch-action:none; }
 
 #app { display:flex; flex-direction:column; height:100%; }
 
 header { flex:0 0 12%; padding-top:env(safe-area-inset-top, 20px); background:#000; display:flex; flex-direction:column; align-items:center; }
-.app-title { 
-  width:100%; 
-  text-align:center; 
-  font-size:6vw; 
-  font-weight:900; 
-  letter-spacing:1px; 
-  color:#fff; 
-  padding: 3vh 0 1.5vh 0; 
-  background: linear-gradient(to bottom, #000, #111); 
-  text-shadow: 0 2px 10px rgba(255,255,255,0.1); 
-}
+.app-title { width:100%; text-align:center; font-size:6vw; font-weight:900; letter-spacing:1px; color:#fff; padding:3vh 0 1.5vh 0; }
 
 .header-content { width:96%; margin:0 auto; display:flex; justify-content:space-between; gap:1.2vw; padding-bottom:1.8vh; flex:1; }
-.setting-group { flex:1; background:#1a1a1a; border-radius:10px; position:relative; height:7.8vh; }
-.setting-label { position:absolute; top:-1.4vh; left:50%; transform:translateX(-50%); font-size:2.3vw; color:#888; font-weight:600; background:#000; padding:0 6px; }
-.global-select { width:100%; height:100%; font-size:5.2vw; font-weight:700; text-align:center; background:transparent; color:inherit; appearance:none; border:none; }
+.setting-group { flex:1; background:#1a1a1a; border-radius:10px; position:relative; height:7.8vh; display:flex; align-items:center; justify-content:center; }
+.setting-label { position:absolute; top:-1.4vh; left:50%; transform:translateX(-50%); font-size:2.3vw; color:#888; font-weight:600; background:#000; padding:0 8px; white-space:nowrap; }
+.global-select { width:90%; height:80%; font-size:5.2vw; font-weight:700; text-align:center; background:transparent; color:inherit; appearance:none; border:none; }
 
-/* Colors */
 #bpm-select { color:#4CCFFF; }
 #key-select { color:#FFD60A; }
 #beat-select { color:#FF9F0A; }
 #drum-select { color:#32D74B; }
 
-/* List Header */
 .col-headers { display:flex; color:#777; font-size:3.4vw; font-weight:600; padding:1.2vh 4vw 0.6vh; background:#000; }
-.col-headers > div { text-align:center; }
-.col-h-loop  { width:9%; }
-.col-h-part  { width:19%; }
-.col-h-chord { width:37%; }
-.col-h-tmpl  { width:35%; }
+.col-headers > div { text-align:center; flex:1; }
 
-/* Main List */
-main { flex:1; overflow-y:auto; padding:0 3vw 26vh; -webkit-overflow-scrolling:touch; }
+main { flex:1; overflow-y:auto; padding:0 3vw 26vh; -webkit-overflow-scrolling:touch; position:relative; }
 main::-webkit-scrollbar { display:none; }
 
 .line-row { display:flex; align-items:center; background:#111; border-radius:10px; margin-bottom:1vh; padding:1vh 2vw; min-height:7.2vh; transition: all 0.18s; }
-.line-row.playing { 
-  border: 2px solid #4CCFFF; 
-  box-shadow: 0 0 24px #4CCFFFaa, 0 0 48px #4CCFFF44; 
-  background: #1a1a1a; 
-}
+.line-row.playing { border:2px solid #4CCFFF; box-shadow:0 0 24px #4CCFFFaa, 0 0 48px #4CCFFF44; background:#1a1a1a; }
 
-/* Loop Button - Glow強化 */
 .loop-btn { width:7vw; height:7vw; border-radius:50%; border:3px solid #555; flex-shrink:0; margin-right:2.2vw; transition: all 0.18s; }
-.loop-btn.active { 
-  background:#4CCFFF; 
-  border-color:#4CCFFF; 
-  box-shadow:0 0 28px #4CCFFF, 0 0 56px #4CCFFF88, inset 0 0 12px #ffffff66; 
-}
+.loop-btn.active { background:#4CCFFF; border-color:#4CCFFF; box-shadow:0 0 28px #4CCFFF, 0 0 56px #4CCFFF88, inset 0 0 12px #ffffff66; }
 
-/* Part Select */
 .part-wrapper { position:relative; width:19%; height:100%; }
-.part-wrapper select { 
-  width:100%; height:100%; font-size:3.3vw; font-weight:700; color:#fff; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; text-align:center; cursor:pointer; 
-}
+.part-wrapper select { width:100%; height:100%; font-size:3.3vw; font-weight:700; color:#fff; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; text-align:center; cursor:pointer; }
 .part-wrapper::after { content:'▼'; position:absolute; right:1.2vw; top:50%; transform:translateY(-50%); color:#fff; font-size:2.2vw; pointer-events:none; }
 
-/* Part背景色 */
 .part-Intro     select { background:#4682B4; }
 .part-A         select { background:#FF8C00; }
 .part-B         select { background:#32CD32; }
@@ -79,19 +50,16 @@ main::-webkit-scrollbar { display:none; }
 .part-C         select { background:#FFD700; }
 .part-Outro     select { background:#A0522D; }
 
-/* Chords - 青文字 + 鉛筆 */
 .chord-wrapper { position:relative; width:37%; height:100%; }
 .chords-input { width:100%; height:100%; background:#222; color:#4CCFFF; font-size:3.5vw; border:none; border-radius:8px; padding:0 5vw 0 1.5vw; }
 .chords-input::placeholder { color:#555; font-size:2.8vw; }
 .edit-icon { position:absolute; right:1.8vw; top:50%; transform:translateY(-50%); font-size:4.2vw; color:#4CCFFF; opacity:0.85; pointer-events:none; }
 
-/* Template */
 .template-wrapper { width:35%; height:100%; }
 .template-wrapper select { width:100%; height:100%; background:#222; color:#ccc; font-size:3.1vw; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; }
 
-/* Add & Play */
-.add-btn { position:absolute; bottom:29vh; left:50%; transform:translateX(-50%); font-size:12vw; color:#555; cursor:pointer; z-index:10; }
-.add-btn:active { color:#aaa; }
+#add-btn { width:100%; height:9vh; background:none; color:#666; font-size:12vw; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; margin:1vh 0; }
+#add-btn:active { color:#aaa; }
 
 .controls-overlay { position:absolute; bottom:0; left:0; right:0; height:30vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; background:linear-gradient(to top,#000 45%,transparent); pointer-events:none; padding-bottom:env(safe-area-inset-bottom); }
 .page-dots { display:flex; gap:2.8vw; margin-bottom:5vh; }
@@ -145,11 +113,9 @@ main::-webkit-scrollbar { display:none; }
     <div class="col-h-tmpl">Template</div>
   </div>
 
-  <main id="line-container">
-    <!-- Lines injected here -->
-  </main>
+  <main id="line-container"></main>
 
-  <div class="add-btn" id="add-btn">+</div>
+  <div id="add-btn">+</div>
 
   <div class="controls-overlay">
     <div class="page-dots">
@@ -163,7 +129,7 @@ main::-webkit-scrollbar { display:none; }
 </div>
 
 <script>
-// スクリプト部分はVer.1.5.1と同じ（変更なし）
+// --- 定数（ここが抜けるとテンプレートが表示されない） ---
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["Intro", "A", "B", "Pre-Chorus", "Chorus", "Interlude", "C", "Outro"];
 const PARTS_DISPLAY = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
@@ -187,6 +153,7 @@ const DEGREE_MAP = {
   "I": 0, "II": 2, "ii": 2, "III": 4, "iii": 4, "IV": 5, "V": 7, "VI": 9, "vi": 9, "VII": 11, "bVII": 10
 };
 
+// --- State & Audio & Functions (省略せず全て含む) ---
 let state = {
   bpm: 120,
   pendingBPM: null,
@@ -303,6 +270,7 @@ function renderLine(line, index) {
   const tempWrap = document.createElement('div');
   tempWrap.className = 'template-wrapper';
   const tempSel = document.createElement('select');
+  // ここが重要！ TEMPLATESが定義されていることを確認
   const options = TEMPLATES.map((t, i) => {
     const cEx = t.deg.map(d => getNoteFromKey(d, state.keyIndex)).join("-");
     const label = `${t.name} / ${t.deg.join("-")} / ${cEx} / ${t.usage}`;
@@ -404,8 +372,10 @@ drumSelect.onchange = (e) => {
   saveData();
 };
 
-document.getElementById('add-btn').onclick = addLine;
+document.getElementById('add-btn').addEventListener('click', addLine);
+document.getElementById('add-btn').addEventListener('touchstart', addLine);
 
+// Storage
 function saveData() {
   localStorage.setItem('ropponState', JSON.stringify(state));
 }
@@ -418,6 +388,7 @@ function loadData() {
   refreshUI();
 }
 
+// Audio (METRO仮)
 function initAudio() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -465,6 +436,7 @@ function playDrum(time, type) {
   }
 }
 
+// Scheduler & Play (前回と同じ)
 function getFirstActiveLineIndex() {
   return state.lines.findIndex(l => l.loop);
 }
