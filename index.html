@@ -30,7 +30,8 @@ input, select, button { outline: none; border: none; background: none; color: in
 #app { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
 
 /* Header (10%) */
-header { flex: 0 0 10%; width: 100%; padding-top: env(safe-area-inset-top); background: #000; z-index: 10; display: flex; align-items: flex-end; padding-bottom: 1vh; }
+header { flex: 0 0 10%; width: 100%; padding-top: env(safe-area-inset-top); background: #000; z-index: 10; display: flex; flex-direction: column; align-items: center; padding-bottom: 1vh; }
+.app-title { width: 100%; text-align: center; font-size: 4vw; font-weight: bold; color: #fff; margin-bottom: 1vh; }
 .header-content { width: 96%; margin: 0 auto; height: 70%; display: flex; justify-content: space-between; gap: 1vw; }
 
 .setting-group { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; background: #1a1a1a; border-radius: 6px; position: relative; height: 100%; }
@@ -51,19 +52,20 @@ header { flex: 0 0 10%; width: 100%; padding-top: env(safe-area-inset-top); back
 
 /* Headers for columns */
 .col-headers { display: flex; width: 100%; padding: 0 4vw; height: 4vh; align-items: center; color: #666; font-size: 3vw; font-weight: bold; background: #000; flex-shrink: 0; }
-.col-h-part { width: 18%; margin-left: 8%; }
-.col-h-chord { width: 45%; margin-left: 2%; }
-.col-h-temp { width: 30%; margin-left: 2%; }
+.col-h-loop { width: 7%; }
+.col-h-part { width: 18%; margin-left: 1%; }
+.col-h-chord { width: 40%; margin-left: 2%; }
+.col-h-temp { width: 35%; margin-left: 2%; }
 
 main { flex: 1; overflow-y: auto; position: relative; padding: 1vh 3% 18vh 3%; -webkit-overflow-scrolling: touch; width: 100%; }
 /* Hide scrollbar */
 main::-webkit-scrollbar { display: none; }
 
-.line-row { height: 12vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5vh; position: relative; background: #111; border-radius: 8px; padding: 0 1vw; transition: background 0.2s; flex-shrink: 0; }
+.line-row { height: 8vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1vh; position: relative; background: #111; border-radius: 8px; padding: 0 1vw; transition: background 0.2s; flex-shrink: 0; }
 .line-row.playing { border: 1px solid #4CCFFF; box-shadow: 0 0 10px rgba(76, 207, 255, 0.3); }
 
 /* Loop Btn */
-.loop-btn { width: 6vw; height: 6vw; border-radius: 50%; border: 2px solid #444; margin-left: 1vw; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+.loop-btn { width: 6vw; height: 6vw; border-radius: 50%; border: 2px solid #444; cursor: pointer; transition: all 0.2s; flex-shrink: 0; margin-left: 0.5vw; }
 .loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 8px #4CCFFF; }
 
 /* Part Select */
@@ -72,13 +74,13 @@ main::-webkit-scrollbar { display: none; }
 .part-wrapper select { width: 100%; height: 100%; background: #222; color: #fff; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 2.8vw; }
 
 /* Chords Input */
-.chords-input { width: 45%; height: 80%; background: #222; border-radius: 4px; font-size: 3.5vw; color: #fff; padding: 0 2vw; border: 1px solid #333; }
+.chords-input { width: 40%; height: 80%; background: #222; border-radius: 4px; font-size: 3.5vw; color: #fff; padding: 0 2vw; border: 1px solid #333; }
 .chords-input::placeholder { color: #555; font-size: 2.5vw; }
 
 /* Template Select */
-.template-wrapper { position: relative; width: 30%; height: 80%; }
+.template-wrapper { position: relative; width: 35%; height: 80%; }
 .template-wrapper::after { content: '▼'; position: absolute; right: 0.5vw; top: 50%; transform: translateY(-50%); font-size: 1.8vw; color: #4CCFFF; pointer-events: none; }
-.template-wrapper select { width: 100%; height: 100%; background: #222; color: #aaa; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 2.2vw; }
+.template-wrapper select { width: 100%; height: 100%; background: #222; color: #aaa; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 3.5vw; }
 
 /* Add Button */
 .add-btn { width: 100%; height: 8vh; background: none; color: #666; font-size: 8vw; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; margin-top: 1vh; flex-shrink: 0; }
@@ -105,6 +107,7 @@ main::-webkit-scrollbar { display: none; }
 
 <div id="app">
   <header>
+    <div class="app-title">Roppon Code Editor</div>
     <div class="header-content">
       <div class="setting-group">
         <div class="setting-label">BPM</div>
@@ -136,7 +139,7 @@ main::-webkit-scrollbar { display: none; }
 
   <div id="list-wrapper">
     <div class="col-headers">
-      <div style="width: 7%"></div>
+      <div class="col-h-loop">roop</div>
       <div class="col-h-part">Part</div>
       <div class="col-h-chord">Chords</div>
       <div class="col-h-temp">Template</div>
