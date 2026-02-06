@@ -194,7 +194,7 @@ let state = {
   beat: 8,
   hat: 1,
   isPlaying: false,
-  lines: [], // { id, loop, part, chords, template }
+  lines: [], // { loop, part, chords, template }
   currentLineIndex: -1,
   nextNoteTime: 0,
   currentBeat: 0
@@ -257,16 +257,30 @@ function transposeChordString(chordStr, semitones) {
 
 // --- UI Rendering ---
 
-<!-- 続き: UIレンダリング + Audio + Scheduler -->
-<script>
-// --- UI Rendering ---
-
 const container = document.getElementById('line-container');
 const bpmSelect = document.getElementById('bpm-select');
 const keySelect = document.getElementById('key-select');
 const beatSelect = document.getElementById('beat-select');
 const hatSelect = document.getElementById('hat-select');
 const playBtn = document.getElementById('play-btn');
+
+function populateSelects() {
+  // Populate BPM
+  for (let i = 60; i <= 200; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i;
+    bpmSelect.appendChild(opt);
+  }
+
+  // Populate KEY
+  KEYS.forEach((key, index) => {
+    const opt = document.createElement('option');
+    opt.value = index;
+    opt.textContent = key;
+    keySelect.appendChild(opt);
+  });
+}
 
 function renderLine(line, index) {
   const div = document.createElement('div');
@@ -324,9 +338,8 @@ function refreshUI() {
     container.insertBefore(renderLine(line, i), btn);
   });
 
-  // --- 修正1: option selected ---
-  Array.from(bpmSelect.options).forEach(opt => opt.selected = (parseInt(opt.value) === state.bpm));
-  Array.from(keySelect.options).forEach(opt => opt.selected = (parseInt(opt.value) === state.keyIndex));
+  bpmSelect.value = state.bpm;
+  keySelect.value = state.keyIndex;
   beatSelect.value = state.beat;
   hatSelect.value = state.hat;
 }
@@ -334,6 +347,7 @@ function refreshUI() {
 function updateLine(index, field, value) {
   state.lines[index][field] = value;
   saveData();
+  refreshUI();
 }
 
 function toggleLoop(index) {
@@ -397,6 +411,19 @@ hatSelect.onchange = (e) => {
 };
 
 document.getElementById('add-btn').onclick = addLine;
+
+// --- Storage ---
+function saveData() {
+  localStorage.setItem('ropponState', JSON.stringify(state));
+}
+
+function loadData() {
+  const saved = localStorage.getItem('ropponState');
+  if (saved) {
+    state = JSON.parse(saved);
+  }
+  refreshUI();
+}
 
 // --- Audio Engine ---
 
@@ -465,30 +492,29 @@ function playDrum(time, type) {
     osc.connect(gain);
     osc.start(time);
     osc.stop(time + 0.5);
-  } else if (type === 'hat' || type === 'hat-open' || type === 'hat-trap') {
+  } else if (type.startsWith('hat')) {
     const osc = audioCtx.createOscillator();
     osc.type = 'square';
 
     let freq = 800;
     let decay = 0.05;
+    let hatType = 'hat';
     if (type === 'hat-open') { decay = 0.3; }
     if (type === 'hat-trap') { freq = 1200; decay = 0.03; }
+    // For shuffle (hat=2), we assume straight for simplicity, no swing implemented
 
-    const filter = audioCtx.createBiquadFilter(); // 修正2: filter接続
+    const filter = audioCtx.createBiquadFilter();
     filter.type = 'highpass';
     filter.frequency.value = 4000;
 
-    osc.frequency.setValueAtTime(freq, time);
-    const drumGain = audioCtx.createGain();
-    drumGain.gain.setValueAtTime(0.1, time);
-    drumGain.gain.exponentialRampToValueAtTime(0.001, time + decay);
+    gain.gain.setValueAtTime(0.1, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
 
     osc.connect(filter);
-    filter.connect(drumGain);
-    drumGain.connect(audioCtx.destination);
+    filter.connect(gain);
 
     osc.start(time);
-    osc.stop(time + 0.5);
+    osc.stop(time + decay + 0.1);
   } else if (type === 'snare') {
     const bufferSize = audioCtx.sampleRate * 0.1;
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -507,10 +533,120 @@ function playDrum(time, type) {
     gain.gain.setValueAtTime(0.5, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
     noise.start(time);
+    noise.stop(time + 0.2);
   }
 }
 
 // --- Scheduler & Play Control ---
+
+function getFirstActiveLineIndex() {
+  return state.lines.findIndex(l => l.loop);
+}
+
+function getNextActiveLineIndex(current) {
+  for (let i = current + 1; i < state.lines.length; i++) {
+    if (state.lines[i].loop) return i;
+  }
+  for (let i = 0; i < state.lines.length; i++) {
+    if (state.lines[i].loop) return i;
+  }
+  return -1;
+}
+
+function nextNote() {
+  const beatTime = 60 / state.bpm / (state.beat / 4); // Division time: for beat=8, 8th note time = (60/bpm)/2
+  state.nextNoteTime += beatTime;
+  state.currentBeat++;
+
+  if (state.currentLineIndex === -1) return;
+
+  const currentLine = state.lines[state.currentLineIndex];
+  const chords = currentLine.chords.split("-").filter(c => c.trim());
+  if (chords.length === 0) {
+    // Skip empty lines
+    state.currentBeat = 0;
+    const nextIndex = getNextActiveLineIndex(state.currentLineIndex);
+    if (nextIndex !== -1) {
+      updatePlayingClass(nextIndex);
+      state.currentLineIndex = nextIndex;
+    }
+    return;
+  }
+
+  const beatsPerChord = state.beat;
+  const beatsPerLine = chords.length * beatsPerChord;
+
+  if (state.currentBeat >= beatsPerLine) {
+    state.currentBeat = 0;
+    const nextIndex = getNextActiveLineIndex(state.currentLineIndex);
+    if (nextIndex === -1) {
+      playBtn.click(); // Stop if no more active lines
+    } else {
+      updatePlayingClass(nextIndex);
+      state.currentLineIndex = nextIndex;
+    }
+  }
+}
+
+function updatePlayingClass(newIndex) {
+  document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
+  const newEl = document.querySelector(`.line-row[data-index="${newIndex}"]`);
+  if (newEl) newEl.classList.add('playing');
+}
+
+function scheduleNote(beatNumber, time) {
+  if (state.currentLineIndex === -1) return;
+
+  const currentLine = state.lines[state.currentLineIndex];
+  const chords = currentLine.chords.split("-").filter(c => c.trim());
+  if (chords.length === 0) return;
+
+  const beatsPerChord = state.beat;
+  const chordIndex = Math.floor(beatNumber / beatsPerChord);
+  const beatInChord = beatNumber % beatsPerChord;
+
+  // Play piano chord at start of each chord (bar)
+  if (beatInChord === 0 && chordIndex < chords.length) {
+    const chord = chords[chordIndex].trim();
+    if (!chord) return;
+
+    let rootNote = chord.replace(/m$/, '');
+    const isMinor = chord.endsWith('m');
+    const rootIndex = KEYS.indexOf(rootNote);
+    if (rootIndex === -1) return;
+
+    const third = isMinor ? 3 : 4;
+    const fifth = 7;
+    const notes = [rootIndex, (rootIndex + third) % 12, (rootIndex + fifth) % 12];
+
+    notes.forEach(offset => {
+      const midi = 60 + offset; // Middle C range
+      const freq = 440 * Math.pow(2, (midi - 69) / 12);
+      playTone(freq, time, 0.5, 'triangle');
+    });
+  }
+
+  // Drum patterns
+  const stepsPerQuarter = state.beat / 4;
+  const quarterBeat = Math.floor(beatInChord / stepsPerQuarter);
+
+  if (beatInChord % stepsPerQuarter === 0) {
+    if (quarterBeat === 0 || quarterBeat === 2) {
+      playDrum(time, 'kick');
+    }
+    if (quarterBeat === 1 || quarterBeat === 3) {
+      playDrum(time, 'snare');
+    }
+  }
+
+  // Hat every division
+  let hatType = 'hat';
+  if (state.hat === 3) hatType = 'hat-open';
+  if (state.hat === 4) hatType = 'hat-trap';
+  // Shuffle (2) not fully implemented (no swing timing)
+  playDrum(time, hatType);
+}
+
 function scheduler() {
   while (state.nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
     scheduleNote(state.currentBeat, state.nextNoteTime);
@@ -521,7 +657,7 @@ function scheduler() {
 
 playBtn.onclick = async () => {
   if (!audioCtx) initAudio();
-  await audioCtx.resume(); // 修正3: play開始時 resume
+  await audioCtx.resume();
 
   if (state.isPlaying) {
     state.isPlaying = false;
@@ -531,8 +667,14 @@ playBtn.onclick = async () => {
     document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
     state.currentBeat = 0;
     state.currentLineIndex = -1;
+    if (state.pendingBPM !== null) {
+      state.bpm = state.pendingBPM;
+      state.pendingBPM = null;
+      bpmSelect.value = state.bpm;
+      saveData();
+    }
   } else {
-    if (state.lines.length === 0) return;
+    if (state.lines.length === 0 || getFirstActiveLineIndex() === -1) return;
 
     await unlockAudio();
 
@@ -542,10 +684,14 @@ playBtn.onclick = async () => {
     state.nextNoteTime = audioCtx.currentTime + 0.1;
     playBtn.textContent = "STOP";
     playBtn.className = "play-btn stop";
+    updatePlayingClass(state.currentLineIndex);
     scheduler();
   }
 };
 
 // --- Initialize ---
+populateSelects();
 loadData();
 </script>
+</body>
+</html>
