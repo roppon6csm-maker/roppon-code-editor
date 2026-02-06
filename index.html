@@ -41,7 +41,7 @@ header { flex: 0 0 10%; width: 100%; padding-top: env(safe-area-inset-top); back
 .global-select { width: 100%; height: 100%; text-align: center; font-size: 4.5vw; font-weight: bold; color: #fff; background: transparent; appearance: none; border-radius: 6px; padding: 0; text-align-last: center; }
 .global-select:focus { background: #222; }
 
-/* Specific widths if needed, but flex:1 handles it */
+/* Specific colors */
 #bpm-select { color: #4CCFFF; }
 #key-select { color: #FFD60A; }
 #beat-select { color: #FF9F0A; }
@@ -74,11 +74,11 @@ main::-webkit-scrollbar { display: none; }
 .part-wrapper select { width: 100%; height: 100%; background: #222; color: #fff; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 2.8vw; }
 
 /* Chords Input */
-.chords-input { width: 40%; height: 80%; background: #222; border-radius: 4px; font-size: 3.5vw; color: #fff; padding: 0 2vw; border: 1px solid #333; }
+.chords-input { width: 100%; background: #222; border-radius: 4px; font-size: 3.5vw; color: #fff; padding: 0 2vw; border: 1px solid #333; height: 100%; }
 .chords-input::placeholder { color: #555; font-size: 2.5vw; }
 
 /* Template Select */
-.template-wrapper { position: relative; width: 35%; height: 80%; }
+.template-wrapper { position: relative; width: 100%; height: 80%; }
 .template-wrapper::after { content: '▼'; position: absolute; right: 0.5vw; top: 50%; transform: translateY(-50%); font-size: 1.8vw; color: #4CCFFF; pointer-events: none; }
 .template-wrapper select { width: 100%; height: 100%; background: #222; color: #aaa; border-radius: 4px; padding: 0 1.5vw 0 0.5vw; font-size: 3.5vw; }
 
@@ -304,19 +304,27 @@ function renderLine(line, index) {
   partWrap.appendChild(partSel);
 
   // Chords Input
+  const chordWrap = document.createElement('div');
+  chordWrap.style = 'width: 40%; height: 80%; position: relative;';
   const chordIn = document.createElement('input');
   chordIn.className = 'chords-input';
   chordIn.value = line.chords;
   chordIn.placeholder = "例: C-G-Am-F";
   chordIn.onchange = (e) => updateLine(index, 'chords', e.target.value);
+  chordWrap.appendChild(chordIn);
+
+  // Pencil icon for edit hint
+  const pencil = document.createElement('span');
+  pencil.textContent = '✏️';
+  pencil.style = 'position: absolute; right: 1vw; top: 50%; transform: translateY(-50%); color: #4CCFFF; font-size: 3vw; pointer-events: none;';
+  chordWrap.appendChild(pencil);
 
   // Template Select
   const tempWrap = document.createElement('div');
   tempWrap.className = 'template-wrapper';
   const tempSel = document.createElement('select');
-
   const options = TEMPLATES.map((t, i) => {
-    const cEx = t.deg.map(d => getNoteFromKey(d, 0)).join("-");
+    const cEx = t.deg.map(d => getNoteFromKey(d, state.keyIndex)).join("-");
     const label = `${t.name} / ${t.deg.join("-")} / ${cEx} / ${t.usage}`;
     return `<option value="${i}" ${i.toString()===line.template?'selected':''}>${label}</option>`;
   }).join('');
@@ -326,7 +334,7 @@ function renderLine(line, index) {
 
   div.appendChild(loopBtn);
   div.appendChild(partWrap);
-  div.appendChild(chordIn);
+  div.appendChild(chordWrap);
   div.appendChild(tempWrap);
 
   return div;
@@ -501,10 +509,9 @@ function playDrum(time, type) {
 
     let freq = 800;
     let decay = 0.05;
-    let hatType = 'hat';
     if (type === 'hat-open') { decay = 0.3; }
     if (type === 'hat-trap') { freq = 1200; decay = 0.03; }
-    // For shuffle (hat=2), we assume straight for simplicity, no swing implemented
+    // Shuffle (2) not fully implemented (no swing timing)
 
     const filter = audioCtx.createBiquadFilter();
     filter.type = 'highpass';
@@ -698,4 +705,3 @@ loadData();
 </script>
 </body>
 </html>
-``` = next
