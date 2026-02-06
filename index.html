@@ -4,114 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="screen-orientation" content="portrait">
-<!--
-ゲーム要件:
-App Name: Roppon Code Editor
-Type: Web Application
-Platform: iPhone (Portrait Only)
-Orientation: Portrait Fixed
-Screen Structure: 1 Screen, No Transition
-Layout: Header 10%, List 70%, Bottom Margin 20% (Empty, No UI)
-Features:
-- BPM: Immediate/Pending update logic
-- Key: 0-11 Integer, Transpose immediately, No flats
-- Loop: Playlist filter (Top to Bottom, Skip OFF)
-- Audio: Drum + Piano, No silent frames
-- Storage: LocalStorage Auto Save/Load
--->
 <title>Roppon Code Editor</title>
 <style>
-/* CSS Reset & Basics */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-body { margin: 0; padding: 0; background-color: #000000; color: #ffffff; overflow: hidden; width: 100vw; height: 100vh; touch-action: none; }
-input, select, button { outline: none; border: none; background: none; color: inherit; font-family: inherit; }
+* { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { background:#000; color:#fff; overflow:hidden; height:100vh; touch-action:none; }
 
-/* Layout Grid */
-#app { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
+#app { display:flex; flex-direction:column; height:100%; }
 
-/* Header (10%) */
-header { flex: 0 0 10%; width: 100%; padding-top: env(safe-area-inset-top); background: #000; z-index: 10; display: flex; flex-direction: column; align-items: center; padding-bottom: 1vh; }
-.app-title { width: 100%; text-align: center; font-size: 4.5vw; font-weight: bold; color: #fff; margin-bottom: 2vh; }
-.header-content { width: 96%; margin: 0 auto; height: 70%; display: flex; justify-content: space-between; gap: 1.5vw; }
+header { flex:0 0 12%; padding-top:env(safe-area-inset-top, 20px); background:#000; display:flex; flex-direction:column; align-items:center; }
+.app-title { 
+  width:100%; 
+  text-align:center; 
+  font-size:6vw; 
+  font-weight:900; 
+  letter-spacing:1px; 
+  color:#fff; 
+  padding: 3vh 0 1.5vh 0; 
+  background: linear-gradient(to bottom, #000, #111); 
+  text-shadow: 0 2px 10px rgba(255,255,255,0.1); 
+}
 
-.setting-group { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; background: #1a1a1a; border-radius: 8px; position: relative; height: 100%; }
-.setting-label { position: absolute; top: -2vh; left: 0; width: 100%; text-align: center; font-size: 2.4vw; color: #888; font-weight: bold; }
+.header-content { width:96%; margin:0 auto; display:flex; justify-content:space-between; gap:1.2vw; padding-bottom:1.8vh; flex:1; }
+.setting-group { flex:1; background:#1a1a1a; border-radius:10px; position:relative; height:7.8vh; }
+.setting-label { position:absolute; top:-1.4vh; left:50%; transform:translateX(-50%); font-size:2.3vw; color:#888; font-weight:600; background:#000; padding:0 6px; }
+.global-select { width:100%; height:100%; font-size:5.2vw; font-weight:700; text-align:center; background:transparent; color:inherit; appearance:none; border:none; }
 
-/* Global Select Styles */
-.global-select { width: 100%; height: 100%; text-align: center; font-size: 4.8vw; font-weight: bold; color: #fff; background: transparent; appearance: none; border-radius: 8px; padding: 0; text-align-last: center; }
-.global-select:focus { background: #222; }
+/* Colors */
+#bpm-select { color:#4CCFFF; }
+#key-select { color:#FFD60A; }
+#beat-select { color:#FF9F0A; }
+#drum-select { color:#32D74B; }
 
-/* Specific colors */
-#bpm-select { color: #4CCFFF; }
-#key-select { color: #FFD60A; }
-#beat-select { color: #FF9F0A; }
-#drum-select { color: #32D74B; }
+/* List Header */
+.col-headers { display:flex; color:#777; font-size:3.4vw; font-weight:600; padding:1.2vh 4vw 0.6vh; background:#000; }
+.col-headers > div { text-align:center; }
+.col-h-loop  { width:9%; }
+.col-h-part  { width:19%; }
+.col-h-chord { width:37%; }
+.col-h-tmpl  { width:35%; }
 
-/* Main List (70%) */
-#list-wrapper { flex: 0 0 70%; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+/* Main List */
+main { flex:1; overflow-y:auto; padding:0 3vw 26vh; -webkit-overflow-scrolling:touch; }
+main::-webkit-scrollbar { display:none; }
 
-/* Headers for columns */
-.col-headers { display: flex; width: 100%; padding: 0 4vw; height: 4vh; align-items: center; color: #666; font-size: 3.2vw; font-weight: bold; background: #000; flex-shrink: 0; }
-.col-h-loop { width: 8%; }
-.col-h-part { width: 18%; margin-left: 1%; }
-.col-h-chord { width: 38%; margin-left: 2%; }
-.col-h-tmpl { width: 36%; margin-left: 2%; }
+.line-row { display:flex; align-items:center; background:#111; border-radius:10px; margin-bottom:1vh; padding:1vh 2vw; min-height:7.2vh; transition: all 0.18s; }
+.line-row.playing { 
+  border: 2px solid #4CCFFF; 
+  box-shadow: 0 0 24px #4CCFFFaa, 0 0 48px #4CCFFF44; 
+  background: #1a1a1a; 
+}
 
-main { flex: 1; overflow-y: auto; position: relative; padding: 1vh 3% 20vh 3%; -webkit-overflow-scrolling: touch; width: 100%; }
-main::-webkit-scrollbar { display: none; }
+/* Loop Button - Glow強化 */
+.loop-btn { width:7vw; height:7vw; border-radius:50%; border:3px solid #555; flex-shrink:0; margin-right:2.2vw; transition: all 0.18s; }
+.loop-btn.active { 
+  background:#4CCFFF; 
+  border-color:#4CCFFF; 
+  box-shadow:0 0 28px #4CCFFF, 0 0 56px #4CCFFF88, inset 0 0 12px #ffffff66; 
+}
 
-.line-row { height: 8.2vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1vh; position: relative; background: #111; border-radius: 10px; padding: 0 1.5vw; transition: all 0.2s; flex-shrink: 0; }
-.line-row.playing { border: 1.5px solid #4CCFFF; box-shadow: 0 0 16px rgba(76, 207, 255, 0.5); }
+/* Part Select */
+.part-wrapper { position:relative; width:19%; height:100%; }
+.part-wrapper select { 
+  width:100%; height:100%; font-size:3.3vw; font-weight:700; color:#fff; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; text-align:center; cursor:pointer; 
+}
+.part-wrapper::after { content:'▼'; position:absolute; right:1.2vw; top:50%; transform:translateY(-50%); color:#fff; font-size:2.2vw; pointer-events:none; }
 
-/* Loop Btn - glow強化 */
-.loop-btn { width: 6.5vw; height: 6.5vw; border-radius: 50%; border: 2.5px solid #555; cursor: pointer; transition: all 0.2s; flex-shrink: 0; margin-left: 0.5vw; }
-.loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 20px #4CCFFF, 0 0 40px #4CCFFF88; }
+/* Part背景色 */
+.part-Intro     select { background:#4682B4; }
+.part-A         select { background:#FF8C00; }
+.part-B         select { background:#32CD32; }
+.part-Pre-Chorus select { background:#9932CC; }
+.part-Chorus    select { background:#FF1493; }
+.part-Interlude select { background:#00CED1; }
+.part-C         select { background:#FFD700; }
+.part-Outro     select { background:#A0522D; }
 
-/* Part Select - 背景色をPartごとに変更 */
-.part-wrapper { position: relative; width: 18%; height: 80%; }
-.part-wrapper::after { content: '▼'; position: absolute; right: 0.8vw; top: 50%; transform: translateY(-50%); font-size: 2vw; color: #fff; pointer-events: none; }
-.part-wrapper select { width: 100%; height: 100%; border-radius: 6px; padding: 0 2vw 0 1vw; font-size: 3vw; font-weight: bold; color: #fff; appearance: none; cursor: pointer; border: none; }
+/* Chords - 青文字 + 鉛筆 */
+.chord-wrapper { position:relative; width:37%; height:100%; }
+.chords-input { width:100%; height:100%; background:#222; color:#4CCFFF; font-size:3.5vw; border:none; border-radius:8px; padding:0 5vw 0 1.5vw; }
+.chords-input::placeholder { color:#555; font-size:2.8vw; }
+.edit-icon { position:absolute; right:1.8vw; top:50%; transform:translateY(-50%); font-size:4.2vw; color:#4CCFFF; opacity:0.85; pointer-events:none; }
 
-/* Partごとの背景色（視認性重視・ユニーク） */
-.part-Intro     select { background: #4682B4; } /* イントロ: 青 */
-.part-A         select { background: #FF8C00; } /* A: オレンジ */
-.part-B         select { background: #32CD32; } /* B: 緑 */
-.part-Pre-Chorus select { background: #9932CC; } /* プレ: 紫 */
-.part-Chorus    select { background: #FF1493; } /* サビ: ピンク */
-.part-Interlude select { background: #00CED1; } /* 間奏: 水色 */
-.part-C         select { background: #FFD700; } /* C: 金 */
-.part-Outro     select { background: #A0522D; } /* アウトロ: 茶 */
+/* Template */
+.template-wrapper { width:35%; height:100%; }
+.template-wrapper select { width:100%; height:100%; background:#222; color:#ccc; font-size:3.1vw; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; }
 
-/* Chords Input - 青文字 + 鉛筆アイコン */
-.chord-wrapper { position: relative; width: 38%; height: 80%; }
-.chords-input { width: 100%; height: 100%; background: #222; border-radius: 6px; font-size: 3.4vw; color: #4CCFFF; padding: 0 4vw 0 1.5vw; border: 1px solid #333; }
-.chords-input::placeholder { color: #555; font-size: 2.8vw; }
-.edit-icon { position: absolute; right: 1.2vw; top: 50%; transform: translateY(-50%); font-size: 3.8vw; color: #4CCFFF; opacity: 0.9; pointer-events: none; }
+/* Add & Play */
+.add-btn { position:absolute; bottom:29vh; left:50%; transform:translateX(-50%); font-size:12vw; color:#555; cursor:pointer; z-index:10; }
+.add-btn:active { color:#aaa; }
 
-/* Template Select */
-.template-wrapper { position: relative; width: 36%; height: 80%; }
-.template-wrapper::after { content: '▼'; position: absolute; right: 0.8vw; top: 50%; transform: translateY(-50%); font-size: 2vw; color: #4CCFFF; pointer-events: none; }
-.template-wrapper select { width: 100%; height: 100%; background: #222; color: #ccc; border-radius: 6px; padding: 0 2vw 0 1vw; font-size: 3vw; }
+.controls-overlay { position:absolute; bottom:0; left:0; right:0; height:30vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; background:linear-gradient(to top,#000 45%,transparent); pointer-events:none; padding-bottom:env(safe-area-inset-bottom); }
+.page-dots { display:flex; gap:2.8vw; margin-bottom:5vh; }
+.dot { width:1.6vw; height:1.6vw; border-radius:50%; background:#444; }
+.dot.active { background:#4CCFFF; box-shadow:0 0 12px #4CCFFF; }
 
-/* Add Button */
-.add-btn { width: 100%; height: 9vh; background: none; color: #666; font-size: 10vw; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; margin-top: 1vh; flex-shrink: 0; }
-.add-btn:active { color: #aaa; }
-
-/* Controls Overlay */
-.controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 28%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; pointer-events: none; background: linear-gradient(to top, #000 40%, transparent); z-index: 50; padding-bottom: 2vh; }
-
-.page-dots { display: flex; gap: 2vw; margin-bottom: 4vh; }
-.dot { width: 1.4vw; height: 1.4vw; border-radius: 50%; background: #444; }
-.dot.active { background: #4CCFFF; box-shadow: 0 0 10px #4CCFFF; }
-
-.play-btn { width: 24vw; height: 24vw; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 5vw; font-weight: bold; color: #fff; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 30px rgba(52,199,89,0.5); transition: transform 0.1s; pointer-events: auto; z-index: 51; }
-.play-btn.stop { background: #FF3B30; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 30px rgba(255,59,48,0.5); }
-.play-btn.play { background: #34C759; }
-.play-btn:active { transform: scale(0.94); }
-
-/* Bottom Spacer (20%) */
-#bottom-spacer { flex: 0 0 20%; width: 100%; background: #000; padding-bottom: env(safe-area-inset-bottom); }
-
+#play-btn { pointer-events:auto; width:26vw; height:26vw; border-radius:50%; background:#34C759; color:#fff; font-size:5.8vw; font-weight:900; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px #000A, 0 0 40px #34C75988; margin-bottom:8vh; transition:transform 0.12s; }
+#play-btn.stop { background:#FF3B30; box-shadow:0 10px 30px #000A, 0 0 40px #FF3B3088; }
+#play-btn:active { transform:scale(0.92); }
 </style>
 </head>
 <body>
@@ -149,38 +138,36 @@ main::-webkit-scrollbar { display: none; }
     </div>
   </header>
 
-  <div id="list-wrapper">
-    <div class="col-headers">
-      <div class="col-h-loop">roop</div>
-      <div class="col-h-part">Part</div>
-      <div class="col-h-chord">Chords</div>
-      <div class="col-h-tmpl">Template</div>
-    </div>
-    <main id="line-container">
-      <!-- Lines injected here -->
-      <div class="add-btn" id="add-btn">+</div>
-    </main>
-    <div class="controls-overlay">
-      <div class="page-dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot active"></div>
-        <div class="dot"></div>
-      </div>
-      <div class="play-btn play" id="play-btn">PLAY</div>
-    </div>
+  <div class="col-headers">
+    <div class="col-h-loop">roop</div>
+    <div class="col-h-part">Part</div>
+    <div class="col-h-chord">Chords</div>
+    <div class="col-h-tmpl">Template</div>
   </div>
 
-  <div id="bottom-spacer"></div>
+  <main id="line-container">
+    <!-- Lines injected here -->
+  </main>
+
+  <div class="add-btn" id="add-btn">+</div>
+
+  <div class="controls-overlay">
+    <div class="page-dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot active"></div>
+      <div class="dot"></div>
+    </div>
+    <div id="play-btn" class="play">PLAY</div>
+  </div>
 </div>
 
 <script>
-// --- Constants & Data ---
+// スクリプト部分はVer.1.5.1と同じ（変更なし）
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["Intro", "A", "B", "Pre-Chorus", "Chorus", "Interlude", "C", "Outro"];
 const PARTS_DISPLAY = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
 
-// Templates with Degrees
 const TEMPLATES = [
   { name: "王道進行", deg: ["I", "V", "vi", "IV"], usage: "サビ最頻出" },
   { name: "マイナー王道", deg: ["vi", "IV", "I", "V"], usage: "切な系サビ" },
@@ -196,18 +183,16 @@ const TEMPLATES = [
   { name: "エモ進行", deg: ["vi", "I", "V", "IV"], usage: "エモい" }
 ];
 
-// Degree to Semitone Offset from Root
 const DEGREE_MAP = {
   "I": 0, "II": 2, "ii": 2, "III": 4, "iii": 4, "IV": 5, "V": 7, "VI": 9, "vi": 9, "VII": 11, "bVII": 10
 };
 
-// --- State ---
 let state = {
   bpm: 120,
   pendingBPM: null,
   keyIndex: 0,
   beat: 8,
-  drum: 1, // HAT → DRUM に変更
+  drum: 1,
   isPlaying: false,
   lines: [],
   currentLineIndex: -1,
@@ -215,14 +200,12 @@ let state = {
   currentBeat: 0
 };
 
-// --- Audio Context --- (省略せず維持)
 let audioCtx;
 let keepAliveOsc = null;
 let lookahead = 25.0;
 let scheduleAheadTime = 0.1;
 let timerID;
 
-// --- Transposition & Chords functions --- (前バージョンと同じ)
 function getNoteFromKey(degree, keyIndex) {
   let offset = DEGREE_MAP[degree] || 0;
   let noteIndex = (keyIndex + offset) % 12;
@@ -264,7 +247,6 @@ function transposeChordString(chordStr, semitones) {
   }).join("-");
 }
 
-// --- UI Rendering ---
 const container = document.getElementById('line-container');
 const bpmSelect = document.getElementById('bpm-select');
 const keySelect = document.getElementById('key-select');
@@ -301,7 +283,6 @@ function renderLine(line, index) {
   const partSel = document.createElement('select');
   partSel.innerHTML = PARTS.map((p, i) => `<option value="${p}" ${p===line.part?'selected':''}>${PARTS_DISPLAY[i]}</option>`).join('');
   partSel.onchange = (e) => updateLine(index, 'part', e.target.value);
-  // Partごとのクラスを追加（背景色変更）
   partSel.classList.add(`part-${line.part}`);
   partWrap.appendChild(partSel);
 
@@ -352,6 +333,11 @@ function refreshUI() {
   keySelect.value = state.keyIndex;
   beatSelect.value = state.beat;
   drumSelect.value = state.drum;
+
+  document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
+  if (state.currentLineIndex >= 0) {
+    updatePlayingClass(state.currentLineIndex);
+  }
 }
 
 function updateLine(index, field, value) {
@@ -387,7 +373,6 @@ function addLine() {
   saveData();
 }
 
-// --- Global Handlers ---
 keySelect.onchange = (e) => {
   const newKeyIndex = parseInt(e.target.value);
   const delta = newKeyIndex - state.keyIndex;
@@ -421,7 +406,6 @@ drumSelect.onchange = (e) => {
 
 document.getElementById('add-btn').onclick = addLine;
 
-// --- Storage ---
 function saveData() {
   localStorage.setItem('ropponState', JSON.stringify(state));
 }
@@ -434,7 +418,6 @@ function loadData() {
   refreshUI();
 }
 
-// --- Audio Engine --- (前バージョンと同じ、Drumは後回しのため未変更)
 function initAudio() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -444,9 +427,7 @@ function initAudio() {
 
 async function unlockAudio() {
   if (!audioCtx) initAudio();
-  if (audioCtx.state !== "running") {
-    await audioCtx.resume();
-  }
+  if (audioCtx.state !== "running") await audioCtx.resume();
   if (!keepAliveOsc) {
     keepAliveOsc = audioCtx.createOscillator();
     keepAliveOsc.type = 'sine';
@@ -460,8 +441,8 @@ async function unlockAudio() {
 }
 
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && audioCtx) {
-    if (audioCtx.state !== 'running') audioCtx.resume();
+  if (document.visibilityState === 'visible' && audioCtx && audioCtx.state !== 'running') {
+    audioCtx.resume();
   }
 });
 
@@ -479,25 +460,18 @@ function playTone(freq, time, duration, type = 'triangle') {
 }
 
 function playDrum(time, type) {
-  // 省略（Drum本格実装は後回し）
-  // METROだけ仮で高音ビープ音
   if (type === 'metro') {
-    playTone(880, time, 0.03, 'sine'); // 高音短いビープ
+    playTone(880, time, 0.03, 'sine');
   }
 }
 
-// --- Scheduler & Play Control --- (前バージョンと同じ)
 function getFirstActiveLineIndex() {
   return state.lines.findIndex(l => l.loop);
 }
 
 function getNextActiveLineIndex(current) {
-  for (let i = current + 1; i < state.lines.length; i++) {
-    if (state.lines[i].loop) return i;
-  }
-  for (let i = 0; i < state.lines.length; i++) {
-    if (state.lines[i].loop) return i;
-  }
+  for (let i = current + 1; i < state.lines.length; i++) if (state.lines[i].loop) return i;
+  for (let i = 0; i < state.lines.length; i++) if (state.lines[i].loop) return i;
   return -1;
 }
 
@@ -537,8 +511,10 @@ function nextNote() {
 
 function updatePlayingClass(newIndex) {
   document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
-  const newEl = document.querySelector(`.line-row[data-index="${newIndex}"]`);
-  if (newEl) newEl.classList.add('playing');
+  if (newIndex >= 0) {
+    const newEl = document.querySelector(`.line-row[data-index="${newIndex}"]`);
+    if (newEl) newEl.classList.add('playing');
+  }
 }
 
 function scheduleNote(beatNumber, time) {
@@ -569,7 +545,6 @@ function scheduleNote(beatNumber, time) {
     });
   }
 
-  // Drum (仮：METROのみビープ)
   if (state.drum === 1 && beatInChord % (state.beat / 4) === 0) {
     playDrum(time, 'metro');
   }
@@ -615,9 +590,14 @@ playBtn.onclick = async () => {
   }
 };
 
-// --- Initialize ---
 populateSelects();
 loadData();
+
+if (state.currentLineIndex >= 0) {
+  updatePlayingClass(state.currentLineIndex);
+} else {
+  document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
+}
 </script>
 </body>
 </html>
