@@ -1,4 +1,4 @@
-<!-- Ver.1.7 - 2025/02/07 大介さん向け修正版 -->
+<!-- Ver.1.8 - 2025/02/07 大介さん向け修正版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,137 +7,86 @@
 <meta name="screen-orientation" content="portrait">
 <title>Roppon Code Editor</title>
 <style>
-/* Ver.1.7 CSS - タイトル灰色 + +ボタンPLAYの上配置 + レスポンシブ強化 */
-* { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-body { background:#000; color:#fff; overflow:hidden; height:100vh; touch-action:none; }
+/* Ver.1.8 CSS - +ボタン問題解決 + レスポンシブ強化 */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { margin: 0; padding: 0; background-color: #000000; color: #ffffff; overflow: hidden; width: 100vw; height: 100vh; touch-action: none; }
+input, select, button { outline: none; border: none; background: none; color: inherit; font-family: inherit; }
 
-#app { display:flex; flex-direction:column; height:100%; }
+/* Layout Grid */
+#app { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; }
 
-header { flex:0 0 12%; padding-top:env(safe-area-inset-top, 20px); background:#000; display:flex; flex-direction:column; align-items:center; }
-.app-title { 
-  width:100%; 
-  text-align:center; 
-  font-size:clamp(4.5vw, 6vw, 32px); 
-  font-weight:900; 
-  letter-spacing:1px; 
-  color:#888; /* 灰色に変更 (KEYラベルと同じ) */
-  padding:clamp(2vh, 3vh, 20px) 0 1.5vh 0; 
-}
+/* Header (12%) */
+header { flex: 0 0 12%; width: 100%; padding-top: env(safe-area-inset-top); background: #000; z-index: 10; display: flex; flex-direction: column; align-items: center; padding-bottom: 1vh; }
+.app-title { width: 100%; text-align: center; font-size: 4.5vw; font-weight: bold; color: #888; margin-bottom: 2vh; }
+.header-content { width: 96%; margin: 0 auto; height: 70%; display: flex; justify-content: space-between; gap: 1.5vw; }
 
-.header-content { width:96%; margin:0 auto; display:flex; justify-content:space-between; gap:clamp(1vw, 1.5vw, 12px); padding-bottom:1.8vh; flex:1; }
-.setting-group { flex:1; background:#1a1a1a; border-radius:10px; position:relative; height:clamp(7vh, 8vh, 60px); display:flex; align-items:center; justify-content:center; min-width:0; text-align:center; }
-.setting-label { 
-  position:absolute; 
-  top:-1.4vh; 
-  left:50%; 
-  transform:translateX(-50%); 
-  font-size:clamp(2vw, 2.3vw, 14px); 
-  color:#888; 
-  font-weight:600; 
-  background:#000; 
-  padding:0 8px; 
-  white-space:nowrap; 
-  z-index:1;
-}
-.global-select { 
-  width:90%; 
-  height:80%; 
-  font-size:clamp(4.5vw, 5.2vw, 28px); 
-  font-weight:700; 
-  text-align:center; 
-  background:transparent; 
-  color:inherit; 
-  appearance:none; 
-  border:none; 
-}
+.setting-group { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; background: #1a1a1a; border-radius: 8px; position: relative; height: 100%; }
+.setting-label { position: absolute; top: -2vh; left: 0; width: 100%; text-align: center; font-size: 2.4vw; color: #888; font-weight: bold; }
 
-/* Colors */
-#bpm-select { color:#4CCFFF; }
-#key-select { color:#FFD60A; }
-#beat-select { color:#FF9F0A; }
-#drum-select { color:#32D74B; }
+/* Global Select Styles */
+.global-select { width: 100%; height: 100%; text-align: center; font-size: 4.8vw; font-weight: bold; color: #fff; background: transparent; appearance: none; border-radius: 8px; padding: 0; text-align-last: center; }
+.global-select:focus { background: #222; }
 
-/* List Header */
-.col-headers { display:flex; color:#777; font-size:clamp(3vw, 3.4vw, 16px); font-weight:600; padding:1.2vh 4vw 0.6vh; background:#000; }
-.col-headers > div { text-align:center; flex:1; }
+/* Specific colors */
+#bpm-select { color: #4CCFFF; }
+#key-select { color: #FFD60A; }
+#beat-select { color: #FF9F0A; }
+#drum-select { color: #32D74B; }
 
-/* Main List */
-main { flex:1; overflow-y:auto; padding:0 3vw 30vh; -webkit-overflow-scrolling:touch; position:relative; }
-main::-webkit-scrollbar { display:none; }
+/* Main List (70%) */
+#list-wrapper { flex: 0 0 70%; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 
-.line-row { display:flex; align-items:center; background:#111; border-radius:10px; margin-bottom:1vh; padding:1vh 2vw; min-height:7.2vh; transition: all 0.18s; }
-.line-row.playing { border:2px solid #4CCFFF; box-shadow:0 0 24px #4CCFFFaa, 0 0 48px #4CCFFF44; background:#1a1a1a; }
+/* Headers for columns */
+.col-headers { display: flex; width: 100%; padding: 0 4vw; height: 4vh; align-items: center; color: #666; font-size: 3.2vw; font-weight: bold; background: #000; flex-shrink: 0; }
+.col-h-loop { width: 8%; }
+.col-h-part { width: 18%; margin-left: 1%; }
+.col-h-chord { width: 38%; margin-left: 2%; }
+.col-h-tmpl { width: 36%; margin-left: 2%; }
 
-/* Loop Button */
-.loop-btn { width:7vw; height:7vw; border-radius:50%; border:3px solid #555; flex-shrink:0; margin-right:2.2vw; transition: all 0.18s; }
-.loop-btn.active { background:#4CCFFF; border-color:#4CCFFF; box-shadow:0 0 28px #4CCFFF, 0 0 56px #4CCFFF88, inset 0 0 12px #ffffff66; }
+main { flex: 1; overflow-y: auto; position: relative; padding: 1vh 3% 20vh 3%; -webkit-overflow-scrolling: touch; width: 100%; }
+main::-webkit-scrollbar { display: none; }
+
+.line-row { height: 8.2vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1vh; position: relative; background: #111; border-radius: 10px; padding: 0 1.5vw; transition: all 0.2s; flex-shrink: 0; }
+.line-row.playing { border: 1.5px solid #4CCFFF; box-shadow: 0 0 16px rgba(76, 207, 255, 0.5); }
+
+/* Loop Btn */
+.loop-btn { width: 6.5vw; height: 6.5vw; border-radius: 50%; border: 2.5px solid #555; cursor: pointer; transition: all 0.2s; flex-shrink: 0; margin-left: 0.5vw; }
+.loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 20px #4CCFFF, 0 0 40px #4CCFFF88; }
 
 /* Part Select */
-.part-wrapper { position:relative; width:19%; height:100%; }
-.part-wrapper select { width:100%; height:100%; font-size:3.3vw; font-weight:700; color:#fff; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; text-align:center; cursor:pointer; }
-.part-wrapper::after { content:'▼'; position:absolute; right:1.2vw; top:50%; transform:translateY(-50%); color:#fff; font-size:2.2vw; pointer-events:none; }
+.part-wrapper { position: relative; width: 18%; height: 80%; }
+.part-wrapper::after { content: '▼'; position: absolute; right: 0.8vw; top: 50%; transform: translateY(-50%); font-size: 2vw; color: #fff; pointer-events: none; }
+.part-wrapper select { width: 100%; height: 100%; background: #222; color: #fff; border-radius: 6px; padding: 0 2vw 0 1vw; font-size: 3vw; }
 
-/* Part背景色 */
-.part-Intro     select { background:#4682B4; }
-.part-A         select { background:#FF8C00; }
-.part-B         select { background:#32CD32; }
-.part-Pre-Chorus select { background:#9932CC; }
-.part-Chorus    select { background:#FF1493; }
-.part-Interlude select { background:#00CED1; }
-.part-C         select { background:#FFD700; }
-.part-Outro     select { background:#A0522D; }
+/* Chords Input */
+.chord-wrapper { position: relative; width: 38%; height: 80%; }
+.chords-input { width: 100%; height: 100%; background: #222; border-radius: 6px; font-size: 3.4vw; color: #4CCFFF; padding: 0 4vw 0 1.5vw; border: 1px solid #333; }
+.chords-input::placeholder { color: #555; font-size: 2.8vw; }
+.edit-icon { position: absolute; right: 1.2vw; top: 50%; transform: translateY(-50%); font-size: 3.8vw; color: #4CCFFF; opacity: 0.9; pointer-events: none; }
 
-/* Chords */
-.chord-wrapper { position:relative; width:37%; height:100%; }
-.chords-input { width:100%; height:100%; background:#222; color:#4CCFFF; font-size:3.5vw; border:none; border-radius:8px; padding:0 5vw 0 1.5vw; }
-.chords-input::placeholder { color:#555; font-size:2.8vw; }
-.edit-icon { position:absolute; right:1.8vw; top:50%; transform:translateY(-50%); font-size:4.2vw; color:#4CCFFF; opacity:0.85; pointer-events:none; }
+/* Template Select */
+.template-wrapper { position: relative; width: 36%; height: 80%; }
+.template-wrapper::after { content: '▼'; position: absolute; right: 0.8vw; top: 50%; transform: translateY(-50%); font-size: 2vw; color: #4CCFFF; pointer-events: none; }
+.template-wrapper select { width: 100%; height: 100%; background: #222; color: #aaa; border-radius: 6px; padding: 0 2vw 0 1vw; font-size: 3vw; }
 
-/* Template */
-.template-wrapper { width:35%; height:100%; }
-.template-wrapper select { width:100%; height:100%; background:#222; color:#ccc; font-size:3.1vw; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; }
+/* Add Button - PLAYの上に配置 */
+.add-btn { width: 9vw; height: 9vw; background: none; color: #666; font-size: 9vw; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; margin-bottom: 2vh; }
 
-/* Add Button - PLAYの上に配置 (controls-overlay内に移動) */
-.add-btn { 
-  width:clamp(8vw, 10vw, 50px); 
-  height:clamp(8vw, 10vw, 50px); 
-  background:none; 
-  color:#666; 
-  font-size:clamp(8vw, 10vw, 50px); 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
-  cursor:pointer; 
-  font-weight:bold; 
-  margin-bottom:2vh; 
-  touch-action:manipulation; 
-}
-.add-btn:active { color:#aaa; }
+/* Controls Overlay */
+.controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 25%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; pointer-events: none; background: linear-gradient(to top, #000 40%, transparent); z-index: 50; padding-bottom: 2vh; }
 
-/* Controls - +ボタンをPLAYの上に追加 */
-.controls-overlay { position:absolute; bottom:0; left:0; width:100%; height:30vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; background:linear-gradient(to top,#000 45%,transparent); z-index:50; padding-bottom:env(safe-area-inset-bottom, 20px); pointer-events:none; }
-.controls-overlay * { pointer-events:auto; } /* タップ可能にする */
-.page-dots { display:flex; gap:2.8vw; margin-bottom:3vh; }
-.dot { width:1.6vw; height:1.6vw; border-radius:50%; background:#444; }
-.dot.active { background:#4CCFFF; box-shadow:0 0 12px #4CCFFF; }
+.page-dots { display: flex; gap: 1.5vw; margin-bottom: 3vh; }
+.dot { width: 1.2vw; height: 1.2vw; border-radius: 50%; background: #333; }
+.dot.active { background: #4CCFFF; }
 
-.play-btn { 
-  width:26vw; 
-  height:26vw; 
-  border-radius:50%; 
-  background:#34C759; 
-  color:#fff; 
-  font-size:5.8vw; 
-  font-weight:900; 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
-  box-shadow:0 10px 30px #000A, 0 0 40px #34C75988; 
-  margin-bottom:clamp(6vh, 8vh, 50px); 
-  transition:transform 0.12s; 
-}
-.play-btn.stop { background:#FF3B30; box-shadow:0 10px 30px #000A, 0 0 40px #FF3B3088; }
-.play-btn:active { transform:scale(0.92); }
+.play-btn { width: 20vw; height: 20vw; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4vw; font-weight: bold; color: #fff; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: transform 0.1s; pointer-events: auto; z-index: 51; }
+.play-btn.stop { background: #FF3B30; box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); }
+.play-btn.play { background: #34C759; box-shadow: 0 0 20px rgba(52, 199, 89, 0.4); }
+.play-btn:active { transform: scale(0.95); }
+
+/* Bottom Spacer (20%) - Strictly Empty */
+#bottom-spacer { flex: 0 0 20%; width: 100%; background: #000; padding-bottom: env(safe-area-inset-bottom); }
+
 </style>
 </head>
 <body>
@@ -165,41 +114,42 @@ main::-webkit-scrollbar { display:none; }
       <div class="setting-group">
         <div class="setting-label">DRUM</div>
         <select id="drum-select" class="global-select">
-          <option value="1" selected>METRO</option>
-          <option value="2">BASIC</option>
-          <option value="3">HOUSE</option>
-          <option value="4">ROCK8</option>
-          <option value="5">DANCE16</option>
+          <option value="1" selected>Straight</option>
+          <option value="2">Shuffle</option>
+          <option value="3">Open</option>
+          <option value="4">Trap</option>
         </select>
       </div>
     </div>
   </header>
 
-  <div class="col-headers">
-    <div class="col-h-loop">roop</div>
-    <div class="col-h-part">Part</div>
-    <div class="col-h-chord">Chords</div>
-    <div class="col-h-tmpl">Template</div>
-  </div>
-
-  <main id="line-container">
-    <!-- Lines injected here -->
-  </main>
-
-  <div class="controls-overlay">
-    <div class="add-btn" id="add-btn">+</div>
-    <div class="page-dots">
-      <div class="dot"></div>
-      <div class="dot"></div>
-      <div class="dot active"></div>
-      <div class="dot"></div>
+  <div id="list-wrapper">
+    <div class="col-headers">
+      <div class="col-h-loop">roop</div>
+      <div class="col-h-part">Part</div>
+      <div class="col-h-chord">Chords</div>
+      <div class="col-h-temp">Template</div>
     </div>
-    <div class="play-btn play" id="play-btn">PLAY</div>
+    <main id="line-container">
+      <!-- Lines injected here -->
+      <div class="add-btn" id="add-btn">+</div>
+    </main>
+    <div class="controls-overlay">
+      <div class="page-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot active"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="play-btn play" id="play-btn">PLAY</div>
+    </div>
   </div>
+
+  <div id="bottom-spacer"></div>
 </div>
 
 <script>
-// Ver.1.7 - タイトル灰色 + +ボタンPLAYの上配置
+// --- Ver.1.8 スクリプト ---
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["Intro", "A", "B", "Pre-Chorus", "Chorus", "Interlude", "C", "Outro"];
 const PARTS_DISPLAY = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
@@ -230,7 +180,7 @@ let state = {
   beat: 8,
   drum: 1,
   isPlaying: false,
-  lines: [],
+  lines: [], // { loop, part, chords, template }
   currentLineIndex: -1,
   nextNoteTime: 0,
   currentBeat: 0
@@ -242,13 +192,17 @@ let lookahead = 25.0;
 let scheduleAheadTime = 0.1;
 let timerID;
 
+// --- Logic: Transposition & Chords ---
+
 function getNoteFromKey(degree, keyIndex) {
   let offset = DEGREE_MAP[degree] || 0;
   let noteIndex = (keyIndex + offset) % 12;
   let noteName = KEYS[noteIndex];
+  
   let quality = "";
   if (degree === "ii" || degree === "iii" || degree === "vi") quality = "m";
   if (degree.match(/^[a-z]/) && degree !== "bVII") quality = "m";
+  
   return noteName + quality;
 }
 
@@ -269,6 +223,7 @@ function transposeChordString(chordStr, semitones) {
     let root = match[1];
     let acc = match[2] || "";
     let suffix = match[3] || "";
+    
     let note = root + acc;
     if (note === "Db") note = "C#";
     if (note === "Eb") note = "D#";
@@ -276,12 +231,16 @@ function transposeChordString(chordStr, semitones) {
     if (note === "Ab") note = "G#";
     if (note === "Bb") note = "A#";
     if (note === "Cb") note = "B";
+    
     let idx = KEYS.indexOf(note);
     if (idx === -1) return c;
+    
     let newIdx = (idx + semitones + 12) % 12;
     return KEYS[newIdx] + suffix;
   }).join("-");
 }
+
+// --- UI Rendering ---
 
 const container = document.getElementById('line-container');
 const bpmSelect = document.getElementById('bpm-select');
@@ -291,12 +250,15 @@ const drumSelect = document.getElementById('drum-select');
 const playBtn = document.getElementById('play-btn');
 
 function populateSelects() {
+  // Populate BPM
   for (let i = 60; i <= 200; i++) {
     const opt = document.createElement('option');
     opt.value = i;
     opt.textContent = i;
     bpmSelect.appendChild(opt);
   }
+
+  // Populate KEY
   KEYS.forEach((key, index) => {
     const opt = document.createElement('option');
     opt.value = index;
@@ -310,20 +272,22 @@ function renderLine(line, index) {
   div.className = 'line-row';
   div.dataset.index = index;
 
+  // Loop Toggle
   const loopBtn = document.createElement('div');
   loopBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
   loopBtn.onclick = () => toggleLoop(index);
 
+  // Part Select
   const partWrap = document.createElement('div');
   partWrap.className = 'part-wrapper';
   const partSel = document.createElement('select');
   partSel.innerHTML = PARTS.map((p, i) => `<option value="${p}" ${p===line.part?'selected':''}>${PARTS_DISPLAY[i]}</option>`).join('');
   partSel.onchange = (e) => updateLine(index, 'part', e.target.value);
-  partSel.classList.add(`part-${line.part}`);
   partWrap.appendChild(partSel);
 
+  // Chords Input
   const chordWrap = document.createElement('div');
-  chordWrap.className = 'chord-wrapper';
+  chordWrap.style = 'width: 40%; height: 80%; position: relative;';
   const chordIn = document.createElement('input');
   chordIn.className = 'chords-input';
   chordIn.value = line.chords;
@@ -331,16 +295,19 @@ function renderLine(line, index) {
   chordIn.onchange = (e) => updateLine(index, 'chords', e.target.value);
   chordWrap.appendChild(chordIn);
 
+  // Pencil icon for edit hint
   const pencil = document.createElement('span');
-  pencil.className = 'edit-icon';
   pencil.textContent = '✏️';
+  pencil.style = 'position: absolute; right: 1vw; top: 50%; transform: translateY(-50%); color: #4CCFFF; font-size: 3vw; pointer-events: none;';
   chordWrap.appendChild(pencil);
 
+  // Template Select
   const tempWrap = document.createElement('div');
   tempWrap.className = 'template-wrapper';
   const tempSel = document.createElement('select');
+
   const options = TEMPLATES.map((t, i) => {
-    const cEx = t.deg.map(d => getNoteFromKey(d, state.keyIndex)).join("-");
+    const cEx = t.deg.map(d => getNoteFromKey(d, 0)).join("-");
     const label = `${t.name} / ${t.deg.join("-")} / ${cEx} / ${t.usage}`;
     return `<option value="${i}" ${i.toString()===line.template?'selected':''}>${label}</option>`;
   }).join('');
@@ -369,11 +336,6 @@ function refreshUI() {
   keySelect.value = state.keyIndex;
   beatSelect.value = state.beat;
   drumSelect.value = state.drum;
-
-  document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
-  if (state.currentLineIndex >= 0) {
-    updatePlayingClass(state.currentLineIndex);
-  }
 }
 
 function updateLine(index, field, value) {
@@ -409,10 +371,12 @@ function addLine() {
   saveData();
 }
 
+// --- Global Settings Handlers ---
 keySelect.onchange = (e) => {
   const newKeyIndex = parseInt(e.target.value);
   const delta = newKeyIndex - state.keyIndex;
   state.keyIndex = newKeyIndex;
+  
   state.lines.forEach(line => {
     line.chords = transposeChordString(line.chords, delta);
   });
@@ -440,15 +404,9 @@ drumSelect.onchange = (e) => {
   saveData();
 };
 
-// +ボタンイベント - 確実に付与
-const addBtn = document.getElementById('add-btn');
-addBtn.addEventListener('click', addLine);
-addBtn.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  addLine();
-});
+document.getElementById('add-btn').onclick = addLine;
 
-// Storage
+// --- Storage ---
 function saveData() {
   localStorage.setItem('ropponState', JSON.stringify(state));
 }
@@ -461,32 +419,43 @@ function loadData() {
   refreshUI();
 }
 
-// Audio (METRO仮)
+// --- Audio Engine ---
+
 function initAudio() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContextClass({ latencyHint: "interactive" });
+    audioCtx = new AudioContextClass({
+      latencyHint: "interactive"
+    });
   }
 }
 
 async function unlockAudio() {
   if (!audioCtx) initAudio();
-  if (audioCtx.state !== "running") await audioCtx.resume();
+
+  if (audioCtx.state !== "running") {
+    await audioCtx.resume();
+  }
+
+  // Persistent Keep-Alive Oscillator (iOS/Android Fix)
   if (!keepAliveOsc) {
     keepAliveOsc = audioCtx.createOscillator();
     keepAliveOsc.type = 'sine';
-    keepAliveOsc.frequency.value = 1;
+    keepAliveOsc.frequency.value = 1; // 1Hz
     const gain = audioCtx.createGain();
-    gain.gain.value = 0.0001;
+    gain.gain.value = 0.0001; // Inaudible
     keepAliveOsc.connect(gain);
     gain.connect(audioCtx.destination);
     keepAliveOsc.start(0);
   }
 }
 
+// Visibility Handler
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && audioCtx && audioCtx.state !== 'running') {
-    audioCtx.resume();
+  if (document.visibilityState === 'visible' && audioCtx) {
+    if (audioCtx.state !== 'running') {
+      audioCtx.resume();
+    }
   }
 });
 
@@ -497,6 +466,7 @@ function playTone(freq, time, duration, type = 'triangle') {
   osc.frequency.value = freq;
   osc.connect(gain);
   gain.connect(audioCtx.destination);
+
   osc.start(time);
   gain.gain.setValueAtTime(0.3, time);
   gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
@@ -504,24 +474,81 @@ function playTone(freq, time, duration, type = 'triangle') {
 }
 
 function playDrum(time, type) {
-  if (type === 'metro') {
-    playTone(880, time, 0.03, 'sine');
+  const gain = audioCtx.createGain();
+  gain.connect(audioCtx.destination);
+
+  if (type === 'kick') {
+    const osc = audioCtx.createOscillator();
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+    gain.gain.setValueAtTime(0.8, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+    osc.connect(gain);
+    osc.start(time);
+    osc.stop(time + 0.5);
+  } else if (type.startsWith('hat')) {
+    const osc = audioCtx.createOscillator();
+    osc.type = 'square';
+
+    let freq = 800;
+    let decay = 0.05;
+    let hatType = 'hat';
+    if (type === 'hat-open') { decay = 0.3; }
+    if (type === 'hat-trap') { freq = 1200; decay = 0.03; }
+    // For shuffle (hat=2), we assume straight for simplicity, no swing implemented
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 4000;
+
+    gain.gain.setValueAtTime(0.1, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
+
+    osc.connect(filter);
+    filter.connect(gain);
+
+    osc.start(time);
+    osc.stop(time + decay + 0.1);
+  } else if (type === 'snare') {
+    const bufferSize = audioCtx.sampleRate * 0.1;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 1000;
+    noise.connect(filter);
+    filter.connect(gain);
+
+    gain.gain.setValueAtTime(0.5, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+    noise.start(time);
+    noise.stop(time + 0.2);
   }
 }
 
-// Scheduler & Play
+// --- Scheduler & Play Control ---
+
 function getFirstActiveLineIndex() {
   return state.lines.findIndex(l => l.loop);
 }
 
 function getNextActiveLineIndex(current) {
-  for (let i = current + 1; i < state.lines.length; i++) if (state.lines[i].loop) return i;
-  for (let i = 0; i < state.lines.length; i++) if (state.lines[i].loop) return i;
+  for (let i = current + 1; i < state.lines.length; i++) {
+    if (state.lines[i].loop) return i;
+  }
+  for (let i = 0; i < state.lines.length; i++) {
+    if (state.lines[i].loop) return i;
+  }
   return -1;
 }
 
 function nextNote() {
-  const beatTime = 60 / state.bpm / (state.beat / 4);
+  const beatTime = 60 / state.bpm / (state.beat / 4); // Division time: for beat=8, 8th note time = (60/bpm)/2
   state.nextNoteTime += beatTime;
   state.currentBeat++;
 
@@ -530,6 +557,7 @@ function nextNote() {
   const currentLine = state.lines[state.currentLineIndex];
   const chords = currentLine.chords.split("-").filter(c => c.trim());
   if (chords.length === 0) {
+    // Skip empty lines
     state.currentBeat = 0;
     const nextIndex = getNextActiveLineIndex(state.currentLineIndex);
     if (nextIndex !== -1) {
@@ -546,7 +574,7 @@ function nextNote() {
     state.currentBeat = 0;
     const nextIndex = getNextActiveLineIndex(state.currentLineIndex);
     if (nextIndex === -1) {
-      playBtn.click();
+      playBtn.click(); // Stop if no more active lines
     } else {
       updatePlayingClass(nextIndex);
       state.currentLineIndex = nextIndex;
@@ -556,10 +584,8 @@ function nextNote() {
 
 function updatePlayingClass(newIndex) {
   document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
-  if (newIndex >= 0) {
-    const newEl = document.querySelector(`.line-row[data-index="${newIndex}"]`);
-    if (newEl) newEl.classList.add('playing');
-  }
+  const newEl = document.querySelector(`.line-row[data-index="${newIndex}"]`);
+  if (newEl) newEl.classList.add('playing');
 }
 
 function scheduleNote(beatNumber, time) {
@@ -573,26 +599,46 @@ function scheduleNote(beatNumber, time) {
   const chordIndex = Math.floor(beatNumber / beatsPerChord);
   const beatInChord = beatNumber % beatsPerChord;
 
+  // Play piano chord at start of each chord (bar)
   if (beatInChord === 0 && chordIndex < chords.length) {
     const chord = chords[chordIndex].trim();
     if (!chord) return;
+
     let rootNote = chord.replace(/m$/, '');
     const isMinor = chord.endsWith('m');
     const rootIndex = KEYS.indexOf(rootNote);
     if (rootIndex === -1) return;
+
     const third = isMinor ? 3 : 4;
     const fifth = 7;
     const notes = [rootIndex, (rootIndex + third) % 12, (rootIndex + fifth) % 12];
+
     notes.forEach(offset => {
-      const midi = 60 + offset;
+      const midi = 60 + offset; // Middle C range
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
       playTone(freq, time, 0.5, 'triangle');
     });
   }
 
-  if (state.drum === 1 && beatInChord % (state.beat / 4) === 0) {
-    playDrum(time, 'metro');
+  // Drum patterns
+  const stepsPerQuarter = state.beat / 4;
+  const quarterBeat = Math.floor(beatInChord / stepsPerQuarter);
+
+  if (beatInChord % stepsPerQuarter === 0) {
+    if (quarterBeat === 0 || quarterBeat === 2) {
+      playDrum(time, 'kick');
+    }
+    if (quarterBeat === 1 || quarterBeat === 3) {
+      playDrum(time, 'snare');
+    }
   }
+
+  // Hat every division
+  let hatType = 'hat';
+  if (state.drum === 3) hatType = 'hat-open';
+  if (state.drum === 4) hatType = 'hat-trap';
+  // Shuffle (2) not fully implemented (no swing timing)
+  playDrum(time, hatType);
 }
 
 function scheduler() {
@@ -623,7 +669,9 @@ playBtn.onclick = async () => {
     }
   } else {
     if (state.lines.length === 0 || getFirstActiveLineIndex() === -1) return;
+
     await unlockAudio();
+
     state.isPlaying = true;
     state.currentBeat = 0;
     state.currentLineIndex = getFirstActiveLineIndex();
@@ -635,14 +683,9 @@ playBtn.onclick = async () => {
   }
 };
 
+// --- Initialize ---
 populateSelects();
 loadData();
-
-if (state.currentLineIndex >= 0) {
-  updatePlayingClass(state.currentLineIndex);
-} else {
-  document.querySelectorAll('.line-row').forEach(el => el.classList.remove('playing'));
-}
 </script>
 </body>
 </html>
