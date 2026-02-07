@@ -1,4 +1,4 @@
-<!-- Ver.1.6.1 - 2025/02/07 大介さん向け修正版 -->
+<!-- Ver.1.7 - 2025/02/07 大介さん向け修正版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,7 +7,7 @@
 <meta name="screen-orientation" content="portrait">
 <title>Roppon Code Editor</title>
 <style>
-/* Ver.1.6.1 CSS - タイトル色変更 + +ボタン位置調整 + 完全レスポンシブ */
+/* Ver.1.7 CSS - タイトル灰色 + +ボタンPLAY上配置 + レスポンシブ強化 */
 * { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 body { background:#000; color:#fff; overflow:hidden; height:100vh; touch-action:none; }
 
@@ -20,9 +20,8 @@ header { flex:0 0 12%; padding-top:env(safe-area-inset-top, 20px); background:#0
   font-size:clamp(4.5vw, 6vw, 32px); 
   font-weight:900; 
   letter-spacing:1px; 
-  color:#FFD60A; /* KEYやTemplateと同じ色に変更 */
+  color:#888; /* 灰色に変更 (KEYラベルと同じ) */
   padding:clamp(2vh, 3vh, 20px) 0 1.5vh 0; 
-  text-shadow:0 2px 8px rgba(255,214,10,0.3); 
 }
 
 .header-content { width:96%; margin:0 auto; display:flex; justify-content:space-between; gap:clamp(1vw, 1.5vw, 12px); padding-bottom:1.8vh; flex:1; }
@@ -98,31 +97,31 @@ main::-webkit-scrollbar { display:none; }
 .template-wrapper { width:35%; height:100%; }
 .template-wrapper select { width:100%; height:100%; background:#222; color:#ccc; font-size:3.1vw; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; }
 
-/* Add Button - 位置を意識してリスト下部に固定、タップしやすく */
-#add-btn { 
-  width:100%; 
-  height:clamp(8vh, 10vh, 70px); 
+/* Add Button - PLAYの上に配置 (controls-overlay内に移動) */
+.add-btn { 
+  width:clamp(8vw, 10vw, 50px); 
+  height:clamp(8vw, 10vw, 50px); 
   background:none; 
   color:#666; 
-  font-size:clamp(8vw, 12vw, 60px); 
+  font-size:clamp(8vw, 10vw, 50px); 
   display:flex; 
   align-items:center; 
   justify-content:center; 
   cursor:pointer; 
   font-weight:bold; 
-  margin:1vh 0 4vh 0; /* 下部余白を増やして下端ギリギリを回避 */
+  margin-bottom:2vh; 
   touch-action:manipulation; 
 }
-#add-btn:active { color:#aaa; }
+.add-btn:active { color:#aaa; }
 
-/* Controls */
-.controls-overlay { position:absolute; bottom:0; left:0; right:0; height:30vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; background:linear-gradient(to top,#000 45%,transparent); pointer-events:none; padding-bottom:env(safe-area-inset-bottom, 20px); }
-.page-dots { display:flex; gap:2.8vw; margin-bottom:5vh; }
+/* Controls - +ボタンをPLAYの上に追加 */
+.controls-overlay { position:absolute; bottom:0; left:0; width:100%; height:30vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; background:linear-gradient(to top,#000 45%,transparent); z-index:50; padding-bottom:env(safe-area-inset-bottom, 20px); pointer-events:none; }
+.controls-overlay * { pointer-events:auto; } /* タップ可能にする */
+.page-dots { display:flex; gap:2.8vw; margin-bottom:3vh; }
 .dot { width:1.6vw; height:1.6vw; border-radius:50%; background:#444; }
 .dot.active { background:#4CCFFF; box-shadow:0 0 12px #4CCFFF; }
 
-#play-btn { 
-  pointer-events:auto; 
+.play-btn { 
   width:26vw; 
   height:26vw; 
   border-radius:50%; 
@@ -137,8 +136,8 @@ main::-webkit-scrollbar { display:none; }
   margin-bottom:clamp(6vh, 8vh, 50px); 
   transition:transform 0.12s; 
 }
-#play-btn.stop { background:#FF3B30; box-shadow:0 10px 30px #000A, 0 0 40px #FF3B3088; }
-#play-btn:active { transform:scale(0.92); }
+.play-btn.stop { background:#FF3B30; box-shadow:0 10px 30px #000A, 0 0 40px #FF3B3088; }
+.play-btn:active { transform:scale(0.92); }
 </style>
 </head>
 <body>
@@ -187,21 +186,20 @@ main::-webkit-scrollbar { display:none; }
     <!-- Lines injected here -->
   </main>
 
-  <div id="add-btn">+</div>
-
   <div class="controls-overlay">
+    <div class="add-btn" id="add-btn">+</div>
     <div class="page-dots">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot active"></div>
       <div class="dot"></div>
     </div>
-    <div id="play-btn" class="play">PLAY</div>
+    <div class="play-btn play" id="play-btn">PLAY</div>
   </div>
 </div>
 
 <script>
-// Ver.1.6.1 - タイトル色を#FFD60Aに変更 + +ボタン位置調整
+// Ver.1.7 - タイトル灰色 + +ボタンPLAYの上配置
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["Intro", "A", "B", "Pre-Chorus", "Chorus", "Interlude", "C", "Outro"];
 const PARTS_DISPLAY = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
@@ -411,7 +409,6 @@ function addLine() {
   saveData();
 }
 
-// Global Handlers
 keySelect.onchange = (e) => {
   const newKeyIndex = parseInt(e.target.value);
   const delta = newKeyIndex - state.keyIndex;
