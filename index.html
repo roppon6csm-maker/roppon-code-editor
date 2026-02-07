@@ -1,4 +1,4 @@
-<!-- Ver.1.6 - 2025/02/07 大介さん向け修正版 -->
+<!-- Ver.1.6.1 - 2025/02/07 大介さん向け修正版 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,14 +7,23 @@
 <meta name="screen-orientation" content="portrait">
 <title>Roppon Code Editor</title>
 <style>
-/* Ver.1.6 CSS - ラベル中央寄せ強化 + レスポンシブ改善 */
+/* Ver.1.6.1 CSS - タイトル色変更 + +ボタン位置調整 + 完全レスポンシブ */
 * { box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 body { background:#000; color:#fff; overflow:hidden; height:100vh; touch-action:none; }
 
 #app { display:flex; flex-direction:column; height:100%; }
 
 header { flex:0 0 12%; padding-top:env(safe-area-inset-top, 20px); background:#000; display:flex; flex-direction:column; align-items:center; }
-.app-title { width:100%; text-align:center; font-size:clamp(4.5vw, 6vw, 32px); font-weight:900; letter-spacing:1px; color:#fff; padding:clamp(2vh, 3vh, 20px) 0 1.5vh 0; }
+.app-title { 
+  width:100%; 
+  text-align:center; 
+  font-size:clamp(4.5vw, 6vw, 32px); 
+  font-weight:900; 
+  letter-spacing:1px; 
+  color:#FFD60A; /* KEYやTemplateと同じ色に変更 */
+  padding:clamp(2vh, 3vh, 20px) 0 1.5vh 0; 
+  text-shadow:0 2px 8px rgba(255,214,10,0.3); 
+}
 
 .header-content { width:96%; margin:0 auto; display:flex; justify-content:space-between; gap:clamp(1vw, 1.5vw, 12px); padding-bottom:1.8vh; flex:1; }
 .setting-group { flex:1; background:#1a1a1a; border-radius:10px; position:relative; height:clamp(7vh, 8vh, 60px); display:flex; align-items:center; justify-content:center; min-width:0; text-align:center; }
@@ -54,7 +63,7 @@ header { flex:0 0 12%; padding-top:env(safe-area-inset-top, 20px); background:#0
 .col-headers > div { text-align:center; flex:1; }
 
 /* Main List */
-main { flex:1; overflow-y:auto; padding:0 3vw 28vh; -webkit-overflow-scrolling:touch; position:relative; }
+main { flex:1; overflow-y:auto; padding:0 3vw 30vh; -webkit-overflow-scrolling:touch; position:relative; }
 main::-webkit-scrollbar { display:none; }
 
 .line-row { display:flex; align-items:center; background:#111; border-radius:10px; margin-bottom:1vh; padding:1vh 2vw; min-height:7.2vh; transition: all 0.18s; }
@@ -89,7 +98,7 @@ main::-webkit-scrollbar { display:none; }
 .template-wrapper { width:35%; height:100%; }
 .template-wrapper select { width:100%; height:100%; background:#222; color:#ccc; font-size:3.1vw; border:none; border-radius:8px; padding:0 2.5vw 0 1.2vw; appearance:none; }
 
-/* Add Button - main内に配置してタップしやすく */
+/* Add Button - 位置を意識してリスト下部に固定、タップしやすく */
 #add-btn { 
   width:100%; 
   height:clamp(8vh, 10vh, 70px); 
@@ -101,7 +110,7 @@ main::-webkit-scrollbar { display:none; }
   justify-content:center; 
   cursor:pointer; 
   font-weight:bold; 
-  margin:1vh 0 2vh 0; 
+  margin:1vh 0 4vh 0; /* 下部余白を増やして下端ギリギリを回避 */
   touch-action:manipulation; 
 }
 #add-btn:active { color:#aaa; }
@@ -192,7 +201,7 @@ main::-webkit-scrollbar { display:none; }
 </div>
 
 <script>
-// Ver.1.6 - テンプレート配列を先頭に移動 + +ボタンイベント強化
+// Ver.1.6.1 - タイトル色を#FFD60Aに変更 + +ボタン位置調整
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["Intro", "A", "B", "Pre-Chorus", "Chorus", "Interlude", "C", "Outro"];
 const PARTS_DISPLAY = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
@@ -402,6 +411,7 @@ function addLine() {
   saveData();
 }
 
+// Global Handlers
 keySelect.onchange = (e) => {
   const newKeyIndex = parseInt(e.target.value);
   const delta = newKeyIndex - state.keyIndex;
@@ -502,7 +512,7 @@ function playDrum(time, type) {
   }
 }
 
-// Scheduler & Play (前回と同じ)
+// Scheduler & Play
 function getFirstActiveLineIndex() {
   return state.lines.findIndex(l => l.loop);
 }
