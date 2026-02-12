@@ -3,72 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Roppon Code Editor</title>
+<title>Roppon Code Editor Ver.2.2</title>
 <style>
-/* 1. 基本・レイアウト固定 */
+/* 1. 全体設定 */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, sans-serif; }
 body { margin: 0; padding: 0; background-color: #000; color: #fff; overflow: hidden; width: 100vw; height: 100vh; }
 input, select, button { outline: none; border: none; background: none; color: inherit; }
 
 #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
 
-/* 2. ヘッダー：重なりを防止する堅牢な構造 */
-header { flex: 0 0 auto; width: 100%; padding-top: env(safe-area-inset-top); background: #000; display: flex; flex-direction: column; align-items: center; padding-bottom: 10px; z-index: 100; }
-.app-title { font-size: 5vw; font-weight: bold; color: #888; padding: 10px 0; }
+/* 2. ヘッダー：重なりを完全に排除 */
+header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0; background: #000; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid #222; }
+.app-title { font-size: 4.5vw; font-weight: bold; color: #888; margin: 12px 0; }
 .header-settings { width: 94%; display: flex; justify-content: space-between; gap: 1.5vw; }
 
-.setting-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: #1a1a1a; border-radius: 10px; padding: 8px 0; border: 1px solid #333; }
-.setting-label { font-size: 2.4vw; color: #666; margin-bottom: 4px; font-weight: bold; }
-.global-select { width: 100%; text-align: center; font-size: 4.8vw; font-weight: bold; appearance: none; text-align-last: center; }
+.setting-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: #1a1a1a; border-radius: 10px; padding: 6px 0; border: 1px solid #333; }
+.setting-label { font-size: 2.2vw; color: #666; margin-bottom: 2px; font-weight: bold; text-transform: uppercase; }
+.global-select { width: 100%; text-align: center; font-size: 4vw; font-weight: bold; appearance: none; text-align-last: center; }
 
 #bpm-select { color: #4CCFFF; }
 #key-select { color: #FFD60A; }
 #beat-select { color: #FF9F0A; }
 #drum-select { color: #32D74B; }
 
-/* 3. メインリスト */
+/* 3. リストエリア */
 #list-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-.col-headers { display: flex; width: 100%; padding: 5px 4vw; color: #444; font-size: 3vw; font-weight: bold; }
-.col-h-loop { width: 10%; } .col-h-part { width: 18%; } .col-h-chord { width: 34%; } .col-h-tmpl { width: 38%; }
+.col-headers { display: flex; width: 100%; padding: 8px 4vw 4px 4vw; color: #444; font-size: 2.5vw; font-weight: bold; text-transform: uppercase; }
+.col-h-loop { width: 8%; } .col-h-part { width: 16%; } .col-h-chord { width: 32%; } .col-h-tmpl { width: 34%; } .col-h-del { width: 10%; }
 
-main { flex: 1; overflow-y: auto; padding: 0 3% 20vh 3%; -webkit-overflow-scrolling: touch; }
+main { flex: 1; overflow-y: auto; padding: 0 3% 25vh 3%; -webkit-overflow-scrolling: touch; }
 main::-webkit-scrollbar { display: none; }
 
-.line-row { height: 10vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; background: #161616; border-radius: 12px; padding: 0 2vw; border: 1px solid #222; }
+.line-row { height: 10vh; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #111; border-radius: 12px; padding: 0 2vw; border: 1px solid #222; }
 .line-row.playing { border: 2px solid #4CCFFF; box-shadow: 0 0 15px rgba(76, 207, 255, 0.4); }
 
-/* Loopボタン */
-.loop-btn { width: 7.5vw; height: 7.5vw; border-radius: 50%; border: 2.5px solid #333; transition: 0.2s; }
-.loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 12px #4CCFFF; }
+.loop-btn { width: 6.5vw; height: 6.5vw; border-radius: 50%; border: 2px solid #333; transition: 0.2s; }
+.loop-btn.active { background-color: #4CCFFF; border-color: #4CCFFF; box-shadow: 0 0 10px #4CCFFF; }
 
-/* 各セル */
-.part-wrapper { width: 18%; height: 70%; background: #222; border-radius: 8px; position: relative; }
-.part-select { width: 100%; height: 100%; font-size: 2.8vw; text-align: center; appearance: none; }
+.part-wrapper { width: 16%; height: 70%; background: #222; border-radius: 6px; }
+.part-select { width: 100%; height: 100%; font-size: 2.6vw; text-align: center; }
 
-.chord-wrapper { width: 34%; height: 70%; position: relative; }
-.chords-input { width: 100%; height: 100%; background: #222; border-radius: 8px; font-size: 3.6vw; color: #4CCFFF; padding: 0 20px 0 10px; border: 1px solid #333; }
-.edit-icon { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 3vw; opacity: 0.6; }
+.chord-wrapper { width: 32%; height: 70%; position: relative; }
+.chords-input { width: 100%; height: 100%; background: #222; border-radius: 6px; font-size: 3.2vw; color: #4CCFFF; padding: 0 5px; border: 1px solid #333; text-align: center; }
 
-/* 4. テンプレートの3行表示エリア */
-.template-display { width: 38%; height: 85%; background: #222; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; padding: 0 8px; border: 1px solid #333; overflow: hidden; }
-.td-name { font-size: 2.8vw; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.td-deg { font-size: 2.2vw; color: #4CCFFF; margin: 1px 0; }
-.td-usage { font-size: 2vw; color: #666; white-space: nowrap; }
+/* テンプレート3行表示 */
+.template-display { width: 34%; height: 85%; background: #1a1a1a; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; padding: 0 6px; border: 1px solid #333; overflow: hidden; }
+.td-name { font-size: 2.6vw; font-weight: bold; color: #fff; white-space: nowrap; }
+.td-deg { font-size: 2vw; color: #4CCFFF; }
+.td-usage { font-size: 1.8vw; color: #555; white-space: nowrap; }
 
-/* 5. ポップアップ（モーダル） */
-#modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-#modal-content { width: 90%; max-height: 80%; background: #1a1a1a; border-radius: 20px; overflow-y: auto; padding: 20px; border: 1px solid #444; }
-.modal-item { background: #222; margin-bottom: 12px; padding: 15px; border-radius: 12px; border: 1px solid #333; }
-.modal-item:active { background: #333; }
+/* 削除ボタン */
+.del-btn { width: 8vw; height: 8vw; display: flex; align-items: center; justify-content: center; color: #444; font-size: 5vw; font-weight: bold; }
+.del-btn:active { color: #FF3B30; }
+
+/* モーダル */
+#modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+#modal-content { width: 85%; max-height: 70%; background: #1a1a1a; border-radius: 15px; overflow-y: auto; padding: 15px; border: 1px solid #333; }
+.modal-item { background: #222; margin-bottom: 8px; padding: 12px; border-radius: 10px; border: 1px solid #444; }
 
 /* コントロール */
-.controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 25%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: linear-gradient(to top, #000 70%, transparent); }
-.add-btn { width: 10vw; height: 10vw; color: #666; font-size: 10vw; display: flex; align-items: center; justify-content: center; margin-bottom: 2vh; pointer-events: auto; }
-.play-btn { width: 22vw; height: 22vw; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4.5vw; font-weight: bold; color: #fff; pointer-events: auto; }
+.controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 25%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; background: linear-gradient(to top, #000 80%, transparent); }
+.add-btn { width: 12vw; height: 12vw; color: #444; font-size: 10vw; display: flex; align-items: center; justify-content: center; margin-bottom: 2vh; pointer-events: auto; }
+.play-btn { width: 22vw; height: 22vw; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4.5vw; font-weight: bold; pointer-events: auto; }
 .play-btn.play { background: #34C759; box-shadow: 0 0 20px rgba(52, 199, 89, 0.4); }
 .play-btn.stop { background: #FF3B30; box-shadow: 0 0 20px rgba(255, 59, 48, 0.4); }
 
-#bottom-spacer { flex: 0 0 12%; background: #000; }
+#bottom-spacer { flex: 0 0 10%; background: #000; }
 </style>
 </head>
 <body>
@@ -86,7 +86,7 @@ main::-webkit-scrollbar { display: none; }
 
   <div id="list-wrapper">
     <div class="col-headers">
-      <div class="col-h-loop">roop</div><div class="col-h-part">Part</div><div class="col-h-chord">Chords</div><div class="col-h-tmpl">Template</div>
+      <div class="col-h-loop">roop</div><div class="col-h-part">Part</div><div class="col-h-chord">Chords</div><div class="col-h-tmpl">Template</div><div class="col-h-del"></div>
     </div>
     <main id="line-container"><div class="add-btn" id="add-btn">+</div></main>
     <div class="controls-overlay"><div class="play-btn play" id="play-btn">PLAY</div></div>
@@ -94,83 +94,101 @@ main::-webkit-scrollbar { display: none; }
   <div id="bottom-spacer"></div>
 </div>
 
-<div id="modal-overlay">
-  <div id="modal-content"></div>
-</div>
+<div id="modal-overlay"><div id="modal-content"></div></div>
 
 <script>
+/**
+ * Roppon Code Editor Ver.2.2
+ */
+const VERSION = "2.2";
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
 const TEMPLATES = [
-  { name: "王道進行", deg: "I-V-vi-IV", usage: "サビ最頻出" },
+  { name: "王道進行", deg: "IV-V-iii-vi", usage: "サビ最頻出" },
   { name: "マイナー王道", deg: "vi-IV-I-V", usage: "切な系サビ" },
-  { name: "逆王道", deg: "IV-V-iii-vi", usage: "Aメロ／Bメロ" },
-  { name: "小室進行", deg: "vi-IV-V-I", usage: "90s感・疾走" },
-  { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" },
-  { name: "カノン進行", deg: "I-V-vi-iii-IV-I-IV-V", usage: "長尺サビ" },
-  { name: "4度進行", deg: "I-IV-vii°-iii-vi-ii-V-I", usage: "元気・明るい" },
-  { name: "泣き進行", deg: "I-iii-vi-V", usage: "感情表現" },
-  { name: "青春進行", deg: "I-V-IV-V", usage: "若さ・疾走" },
-  { name: "Bメロ定番", deg: "ii-V-I", usage: "溜め" },
-  { name: "ブリッジ上昇", deg: "IV-V-V/vi-vi", usage: "サビ前" },
-  { name: "転調前", deg: "I-V-V/II", usage: "キーアップ直前" },
-  { name: "エモ進行", deg: "vi-I-V-IV", usage: "エモい" },
-  { name: "ロック定番", deg: "I-bVII-IV", usage: "ロック定番展開" }
+  { name: "小室進行", deg: "vi-IV-V-I", usage: "疾走感" },
+  { name: "カノン進行", deg: "I-V-vi-iii-IV-I-IV-V", usage: "感動系" },
+  { name: "4度進行", deg: "I-IV-vii°-iii-vi-ii-V-I", usage: "ジャズ/元気" },
+  { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "おしゃれ" }
 ];
 const DEGREE_MAP = { "I":0, "II":2, "ii":2, "iii":4, "IV":5, "V":7, "vi":9, "vii°":11, "bVII":10 };
 
-let state = { bpm: 140, keyIndex: 0, beat: 8, isPlaying: false, lines: [
-  { loop: true, part: "イントロ", chords: "C-G-Am-F", template: 0 }
-], currentLineIndex: -1, nextNoteTime: 0, currentBeat: 0 };
+let state = { 
+  bpm: 140, keyIndex: 0, beat: 8, drum: "Shuffle", isPlaying: false, 
+  lines: [{ loop: true, part: "イントロ", chords: "F-G-Em-Am", template: 0 }], 
+  currentLineIndex: -1, nextNoteTime: 0, currentBeat: 0 
+};
 
 let audioCtx, timerID;
 
-// --- Logic: Audio ---
-function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
+// --- 音声エンジン ---
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
 function playTone(freq, time, duration) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = 'triangle';
   osc.frequency.setValueAtTime(freq, time);
-  gain.gain.setValueAtTime(0.2, time);
-  gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+  gain.gain.setValueAtTime(0.15, time);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
   osc.connect(gain); gain.connect(audioCtx.destination);
   osc.start(time); osc.stop(time + duration);
 }
 
+function playDrum(time, type) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  if (type === 'kick') {
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.1);
+    gain.gain.setValueAtTime(0.4, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+  }
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(time); osc.stop(time + 0.1);
+}
+
 function scheduler() {
   while (state.nextNoteTime < audioCtx.currentTime + 0.1) {
-    const line = state.lines[state.currentLineIndex];
-    if (line && line.chords) {
-      const chords = line.chords.split("-").filter(c => c.trim());
-      const chordIdx = Math.floor(state.currentBeat / state.beat) % chords.length;
-      if (state.currentBeat % state.beat === 0) {
-        const root = chords[chordIdx].replace(/m|dim/g, '');
-        const idx = KEYS.indexOf(root);
-        if (idx !== -1) playTone(440 * Math.pow(2, (idx + 48 - 69) / 12), state.nextNoteTime, 0.5);
-      }
-    }
+    scheduleNote(state.currentBeat, state.nextNoteTime);
     const secondsPerBeat = 60.0 / state.bpm / (state.beat / 4);
     state.nextNoteTime += secondsPerBeat;
     state.currentBeat++;
-    
-    // 次の行への遷移
-    const chordsCount = line ? line.chords.split("-").length : 0;
-    if (state.currentBeat >= chordsCount * state.beat) {
-      state.currentBeat = 0;
-      let nextIdx = state.lines.findIndex((l, i) => i > state.currentLineIndex && l.loop);
-      if (nextIdx === -1) nextIdx = state.lines.findIndex(l => l.loop);
-      state.currentLineIndex = nextIdx;
-      updatePlayingUI();
-    }
   }
   timerID = setTimeout(scheduler, 25);
 }
 
-// --- UI Logic ---
+function scheduleNote(beatNum, time) {
+  if (state.currentLineIndex === -1) return;
+  const line = state.lines[state.currentLineIndex];
+  const chords = line.chords.split("-").filter(c => c.trim());
+  if (chords.length === 0) return;
+
+  const beatInChord = beatNum % state.beat;
+  const chordIdx = Math.floor(beatNum / state.beat) % chords.length;
+
+  if (beatInChord === 0) {
+    const root = chords[chordIdx].replace(/m|dim/g, '');
+    const idx = KEYS.indexOf(root);
+    if (idx !== -1) playTone(440 * Math.pow(2, (idx + 48 - 69) / 12), time, 0.4);
+  }
+  
+  // ドラムパターン連動
+  const isDownBeat = beatInChord % (state.beat / 2) === 0;
+  if (state.drum === "Straight" && isDownBeat) playDrum(time, 'kick');
+  if (state.drum === "Shuffle" && (beatInChord === 0 || beatInChord === Math.floor(state.beat * 0.6))) playDrum(time, 'kick');
+  if (state.drum === "Trap" && beatNum % 2 === 0) playDrum(time, 'kick');
+
+  if (beatNum >= chords.length * state.beat) {
+    state.currentBeat = 0;
+    let nextIdx = state.lines.findIndex((l, i) => i > state.currentLineIndex && l.loop);
+    if (nextIdx === -1) nextIdx = state.lines.findIndex(l => l.loop);
+    state.currentLineIndex = nextIdx;
+    updateUIActive();
+  }
+}
+
+// --- UI描画 ---
 function render() {
   const container = document.getElementById('line-container');
   const addBtn = document.getElementById('add-btn');
@@ -179,95 +197,90 @@ function render() {
   state.lines.forEach((line, idx) => {
     const row = document.createElement('div');
     row.className = 'line-row';
-    row.dataset.index = idx;
-
+    
     const lBtn = document.createElement('div');
     lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
     lBtn.onclick = () => { line.loop = !line.loop; render(); };
 
     const pWrap = document.createElement('div');
     pWrap.className = 'part-wrapper';
-    const pSel = document.createElement('select');
-    pSel.className = 'part-select';
-    PARTS.forEach(p => pSel.add(new Option(p, p)));
-    pSel.value = line.part;
+    const pSel = document.createElement('select'); pSel.className = 'part-select';
+    PARTS.forEach(p => pSel.add(new Option(p, p))); pSel.value = line.part;
     pSel.onchange = (e) => line.part = e.target.value;
     pWrap.appendChild(pSel);
 
     const cWrap = document.createElement('div');
     cWrap.className = 'chord-wrapper';
-    const cIn = document.createElement('input');
-    cIn.className = 'chords-input';
+    const cIn = document.createElement('input'); cIn.className = 'chords-input';
     cIn.value = line.chords;
     cIn.onchange = (e) => { line.chords = e.target.value; line.template = -1; render(); };
-    cWrap.append(cIn, Object.assign(document.createElement('span'), {className:'edit-icon', textContent:'✏️'}));
+    cWrap.appendChild(cIn);
 
-    // テンプレート表示（3行）
     const tDisp = document.createElement('div');
     tDisp.className = 'template-display';
-    const tData = TEMPLATES[line.template] || { name: "カスタム", deg: "自由入力", usage: "Templateをタップ" };
-    tDisp.innerHTML = `<div class="td-name">${tData.name}</div><div class="td-deg">${tData.deg}</div><div class="td-usage">${tData.usage}</div>`;
-    tDisp.onclick = () => showTemplateModal(idx);
+    const t = TEMPLATES[line.template] || { name: "Custom", deg: "---", usage: "Tap to Select" };
+    tDisp.innerHTML = `<div class="td-name">${t.name}</div><div class="td-deg">${t.deg}</div><div class="td-usage">${t.usage}</div>`;
+    tDisp.onclick = () => showModal(idx);
 
-    row.append(lBtn, pWrap, cWrap, tDisp);
+    const dBtn = document.createElement('div');
+    dBtn.className = 'del-btn'; dBtn.textContent = '×';
+    dBtn.onclick = () => { if(confirm("この行を削除しますか？")) { state.lines.splice(idx, 1); render(); } };
+
+    row.append(lBtn, pWrap, cWrap, tDisp, dBtn);
     container.insertBefore(row, addBtn);
   });
-  updatePlayingUI();
+  updateUIActive();
 }
 
-function showTemplateModal(lineIdx) {
+function showModal(lineIdx) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
-  content.innerHTML = '<h3 style="text-align:center;color:#888;">テンプレートを選択</h3>';
-  
+  content.innerHTML = '<h3 style="text-align:center;color:#666;font-size:3vw;">Template</h3>';
   TEMPLATES.forEach((t, i) => {
     const item = document.createElement('div');
     item.className = 'modal-item';
-    item.innerHTML = `<strong>${t.name}</strong><div style="color:#4CCFFF;font-size:3vw;">${t.deg}</div><div style="color:#666;font-size:2.8vw;">${t.usage}</div>`;
+    item.innerHTML = `<strong>${t.name}</strong><br><small style="color:#4CCFFF">${t.deg}</small><br><small style="color:#666">${t.usage}</small>`;
     item.onclick = () => {
       state.lines[lineIdx].template = i;
-      state.lines[lineIdx].chords = applyKeyToDeg(t.deg);
+      state.lines[lineIdx].chords = applyKey(t.deg);
       overlay.style.display = 'none';
       render();
     };
     content.appendChild(item);
   });
   overlay.style.display = 'flex';
-  overlay.onclick = (e) => { if(e.target === overlay) overlay.style.display = 'none'; };
+  overlay.onclick = (e) => { if(e.target===overlay) overlay.style.display='none'; };
 }
 
-function applyKeyToDeg(degStr) {
+function applyKey(degStr) {
   return degStr.split('-').map(d => {
     let rootDeg = d.match(/I|II|iii|IV|V|vi|vii°|bVII/)[0];
-    let offset = DEGREE_MAP[rootDeg];
-    let note = KEYS[(state.keyIndex + offset) % 12];
+    let note = KEYS[(state.keyIndex + DEGREE_MAP[rootDeg]) % 12];
     if (d.includes('m')) note += 'm';
     if (d.includes('°')) note += 'dim';
     return note;
   }).join('-');
 }
 
-function updatePlayingUI() {
+function updateUIActive() {
   document.querySelectorAll('.line-row').forEach((el, i) => {
     el.classList.toggle('playing', i === state.currentLineIndex);
   });
 }
 
+// --- イベント制御 ---
 document.getElementById('play-btn').onclick = async () => {
   initAudio();
   if (state.isPlaying) {
-    state.isPlaying = false;
-    clearTimeout(timerID);
+    state.isPlaying = false; clearTimeout(timerID);
     document.getElementById('play-btn').className = "play-btn play";
     document.getElementById('play-btn').textContent = "PLAY";
-    state.currentLineIndex = -1;
-    updatePlayingUI();
+    state.currentLineIndex = -1; updateUIActive();
   } else {
     if (audioCtx.state === 'suspended') await audioCtx.resume();
     state.isPlaying = true;
     state.currentLineIndex = state.lines.findIndex(l => l.loop);
-    state.currentBeat = 0;
-    state.nextNoteTime = audioCtx.currentTime + 0.1;
+    state.currentBeat = 0; state.nextNoteTime = audioCtx.currentTime + 0.1;
     document.getElementById('play-btn').className = "play-btn stop";
     document.getElementById('play-btn').textContent = "STOP";
     scheduler();
@@ -280,10 +293,20 @@ document.getElementById('add-btn').onclick = () => {
 };
 
 window.onload = () => {
+  console.log("Roppon Code Editor Ver." + VERSION + " Initialized");
   const b = document.getElementById('bpm-select'); for(let i=60;i<=200;i++) b.add(new Option(i,i)); b.value=state.bpm;
   const k = document.getElementById('key-select'); KEYS.forEach((n,i)=> k.add(new Option(n,i))); k.value=state.keyIndex;
-  b.onchange = (e) => state.bpm = e.target.value;
-  k.onchange = (e) => { state.keyIndex = parseInt(e.target.value); render(); };
+  const beat = document.getElementById('beat-select');
+  const drum = document.getElementById('drum-select');
+
+  b.onchange = (e) => state.bpm = parseInt(e.target.value);
+  k.onchange = (e) => { 
+    state.keyIndex = parseInt(e.target.value);
+    state.lines.forEach(l => { if(l.template !== -1) l.chords = applyKey(TEMPLATES[l.template].deg); });
+    render();
+  };
+  beat.onchange = (e) => state.beat = parseInt(e.target.value);
+  drum.onchange = (e) => state.drum = e.target.value;
   render();
 };
 </script>
