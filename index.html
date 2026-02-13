@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Roppon Code Editor Ver.2.6</title>
+<title>Roppon Code Editor Ver.2.7</title>
 <style>
-/* --- 1. 基本設定 --- */
+/* --- 1. 基本・レイアウト設定 --- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
 body { margin: 0; padding: 0; background-color: #000; color: #fff; overflow: hidden; width: 100vw; height: 100vh; }
 input, select, button { outline: none; border: none; background: none; color: inherit; }
@@ -13,13 +13,13 @@ input, select, button { outline: none; border: none; background: none; color: in
 #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
 
 /* --- 2. ヘッダーエリア --- */
-header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0; background: #000; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid #333; z-index: 100; }
-.app-title { font-size: 5vw; font-weight: 800; color: #666; margin: 10px 0; letter-spacing: 1px; }
-.header-settings { width: 96%; display: flex; justify-content: space-between; gap: 2vw; }
+header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0; background: #000; border-bottom: 1px solid #333; z-index: 100; }
+.app-title { text-align: center; font-size: 5vw; font-weight: 800; color: #666; margin: 10px 0; letter-spacing: 1px; }
+.header-settings { width: 96%; margin: 0 auto; display: flex; justify-content: space-between; gap: 2vw; }
 
 .setting-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: #111; border-radius: 8px; padding: 5px 0; border: 1px solid #333; }
 .setting-label { font-size: 2.5vw; color: #888; margin-bottom: 2px; font-weight: bold; text-transform: uppercase; }
-.global-select { width: 100%; text-align: center; font-size: 4vw; font-weight: bold; appearance: none; text-align-last: center; padding: 2px 0; }
+.global-select { width: 100%; text-align: center; font-size: 4vw; font-weight: bold; appearance: none; text-align-last: center; }
 
 #bpm-select { color: #00E5FF; }
 #key-select { color: #FFD60A; }
@@ -27,47 +27,46 @@ header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0
 #drum-select { color: #32D74B; }
 
 /* --- 3. リストエリア --- */
-#list-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-.col-headers { display: flex; width: 100%; padding: 5px 2vw; background: #050505; color: #555; font-size: 2.2vw; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #222; }
+#list-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.col-headers { display: flex; width: 100%; padding: 5px 2vw; background: #050505; color: #555; font-size: 2.2vw; font-weight: bold; border-bottom: 1px solid #222; }
 .col-h-loop { width: 10%; text-align: center; } 
-.col-h-part { width: 18%; text-align: center; } 
+.col-h-part { width: 20%; text-align: center; } 
 .col-h-chord { width: 32%; text-align: center; } 
 .col-h-tmpl { width: 30%; text-align: center; } 
-.col-h-del { width: 10%; }
 
 main { flex: 1; overflow-y: auto; padding: 10px 2vw 220px 2vw; -webkit-overflow-scrolling: touch; }
 main::-webkit-scrollbar { display: none; }
 
-.line-row { height: 90px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #161616; border-radius: 10px; border: 1px solid #222; padding: 0 1vw; position: relative; }
+.line-row { height: 90px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #161616; border-radius: 10px; border: 1px solid #222; padding: 0 1vw; }
 .line-row.playing { border: 2px solid #00E5FF; box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); background: #222; }
 
-/* ★ループボタン縮小修正 */
+/* ★ループボタン縮小 */
 .loop-btn { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #444; background: #000; margin: 0 auto; transition: 0.2s; }
 .loop-btn.active { background-color: #00E5FF; border-color: #00E5FF; box-shadow: 0 0 8px #00E5FF; }
 
-.part-wrapper { width: 18%; }
-.part-select { width: 100%; font-size: 3.2vw; color: #fff; background: #222; border-radius: 4px; padding: 6px 0; text-align: center; border: 1px solid #333; }
+.part-wrapper { width: 20%; display: flex; justify-content: center; }
+.part-select { width: 90%; font-size: 3.2vw; color: #fff; background: #222; border-radius: 4px; padding: 8px 0; text-align: center; border: 1px solid #333; appearance: none; }
 
-.chord-wrapper { width: 32%; padding: 0 1vw; }
-.chords-input { width: 100%; height: 45px; background: #000; border: 1px solid #333; border-radius: 4px; color: #00E5FF; font-size: 4vw; text-align: center; font-weight: bold; }
+.chord-wrapper { width: 32%; display: flex; justify-content: center; }
+.chords-input { width: 95%; height: 45px; background: #000; border: 1px solid #333; border-radius: 4px; color: #00E5FF; font-size: 3.8vw; text-align: center; font-weight: bold; }
 
-.template-display { width: 30%; height: 85%; background: #222; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: flex-start; padding: 4px 8px; border: 1px solid #444; overflow: hidden; }
-.td-name { font-size: 3.2vw; font-weight: bold; color: #fff; white-space: nowrap; line-height: 1.2; }
-.td-deg { font-size: 2.8vw; color: #00E5FF; white-space: nowrap; line-height: 1.2; }
-.td-usage { font-size: 2.4vw; color: #aaa; white-space: nowrap; line-height: 1.2; }
+.template-display { width: 30%; height: 80%; background: #222; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 4px 8px; border: 1px solid #444; overflow: hidden; }
+.td-name { font-size: 3.2vw; font-weight: bold; color: #fff; white-space: nowrap; }
+.td-deg { font-size: 2.8vw; color: #00E5FF; white-space: nowrap; }
 
-.del-btn { width: 10%; text-align: center; color: #444; font-size: 6vw; }
+.del-btn { width: 8%; text-align: center; color: #444; font-size: 6vw; padding-left: 5px; }
 .add-btn { margin-top: 10px; width: 100%; height: 60px; border: 2px dashed #333; border-radius: 10px; color: #555; font-size: 30px; display: flex; align-items: center; justify-content: center; }
 
 /* --- 4. コントロール --- */
 .controls-overlay { position: fixed; bottom: 0; left: 0; width: 100%; height: 160px; pointer-events: none; background: linear-gradient(to top, #000 70%, transparent); display: flex; justify-content: center; align-items: center; z-index: 200; padding-bottom: env(safe-area-inset-bottom); }
-.play-btn { width: 85px; height: 85px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; pointer-events: auto; transition: 0.1s; }
+.play-btn { width: 85px; height: 85px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; pointer-events: auto; }
 .play-btn.play { background: #fff; color: #000; border: 5px solid #333; }
 .play-btn.stop { background: #FF3B30; color: #fff; border: 5px solid #800; }
 
 /* --- 5. モーダル --- */
 #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-#modal-content { width: 92%; max-height: 85%; background: #1a1a1a; border-radius: 15px; overflow-y: auto; padding: 20px; border: 1px solid #333; }
+#modal-content { width: 92%; max-height: 80%; background: #1a1a1a; border-radius: 15px; overflow-y: auto; padding: 20px; border: 1px solid #333; }
+.modal-item { background: #252525; margin-bottom: 10px; padding: 15px; border-radius: 10px; border-left: 4px solid #00E5FF; }
 </style>
 </head>
 <body>
@@ -85,7 +84,7 @@ main::-webkit-scrollbar { display: none; }
 
   <div id="list-wrapper">
     <div class="col-headers">
-      <div class="col-h-loop">Loop</div><div class="col-h-part">Part</div><div class="col-h-chord">Chords</div><div class="col-h-tmpl">Template</div><div class="col-h-del"></div>
+      <div class="col-h-loop">LOOP</div><div class="col-h-part">PART</div><div class="col-h-chord">CHORDS</div><div class="col-h-tmpl">TEMPLATE</div>
     </div>
     <main id="line-container"><div class="add-btn" id="add-btn">+</div></main>
     <div class="controls-overlay"><div class="play-btn play" id="play-btn">PLAY</div></div>
@@ -95,32 +94,24 @@ main::-webkit-scrollbar { display: none; }
 
 <script>
 /**
- * Roppon Code Editor Ver.2.6
+ * Roppon Code Editor Ver.2.7
  */
-
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
 const DEG_TO_SEMITONE = { "I":0, "II":2, "ii":2, "iii":4, "III":4, "IV":5, "iv":5, "V":7, "v":7, "vi":9, "VI":9, "vii°":11, "bVII":10, "V/vi": 11, "V/II": 9 };
 
-const TEMPLATE_CATEGORIES = [
-  { cat: "王道・定番系", list: [
-    { name: "王道進行", deg: "I-V-vi-IV", usage: "サビ最頻出" },
-    { name: "マイナー王道", deg: "vi-IV-I-V", usage: "切な系サビ" },
-    { name: "逆王道", deg: "IV-V-iii-vi", usage: "Aメロ／Bメロ" }
-  ]},
-  { cat: "J-POP特化進行", list: [
-    { name: "小室進行", deg: "vi-IV-V-I", usage: "90s感・疾走" },
-    { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" }
-  ]}
+const TEMPLATES = [
+  { name: "王道進行", deg: "I-V-vi-IV", usage: "サビ最頻出" },
+  { name: "マイナー王道", deg: "vi-IV-I-V", usage: "切な系サビ" },
+  { name: "逆王道", deg: "IV-V-iii-vi", usage: "Aメロ／Bメロ" },
+  { name: "小室進行", deg: "vi-IV-V-I", usage: "90s感・疾走" },
+  { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" }
 ];
-
-let ALL_TEMPLATES = [];
-TEMPLATE_CATEGORIES.forEach(c => ALL_TEMPLATES = ALL_TEMPLATES.concat(c.list));
 
 let state = {
   bpm: 164, keyIndex: 0, beat: 8, drum: "Straight", isPlaying: false,
   lines: [
-    { loop: true, part: "イントロ", chords: "F-G-Am-Am", templateName: "王道進行", templateDeg: "I-V-vi-IV", templateUsage: "サビ最頻出" }
+    { loop: true, part: "イントロ", chords: "F-G-Am-Am", templateName: "王道進行", templateDeg: "I-V-vi-IV" }
   ],
   currentLineIndex: -1, currentBeatGlobal: 0, nextNoteTime: 0
 };
@@ -130,63 +121,53 @@ let schedulerInterval = null;
 
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-/* --- 高品位ピアノ・エンジン (Hard/Bright Piano) --- */
-function playPiano(freq, time, duration, style) {
+/* --- 楽器: 硬質なピアノ --- */
+function playPiano(freq, time, duration) {
   if (freq <= 0) return;
   const master = audioCtx.createGain();
   master.connect(audioCtx.destination);
   
-  // 1. 基音と金属的な倍音 (FM)
+  // 基音 + 硬さを出すFM的倍音
   const osc1 = audioCtx.createOscillator();
-  const osc2 = audioCtx.createOscillator(); // 金属音用
+  const osc2 = audioCtx.createOscillator();
   const g1 = audioCtx.createGain();
   const g2 = audioCtx.createGain();
 
-  osc1.type = 'triangle'; 
-  osc1.frequency.setValueAtTime(freq, time);
-  
-  osc2.type = 'sine';
-  osc2.frequency.setValueAtTime(freq * 4, time); // 硬さを出す高域倍音
+  osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, time);
+  osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq * 4, time); // 硬い高域
 
-  g1.connect(master);
-  g2.connect(master);
-  osc1.connect(g1);
-  osc2.connect(g2);
+  osc1.connect(g1); g1.connect(master);
+  osc2.connect(g2); g2.connect(master);
 
-  // エンベロープ設定 (硬いアタック)
-  const attack = 0.005;
-  const decay = duration;
-  
   master.gain.setValueAtTime(0, time);
-  master.gain.linearRampToValueAtTime(0.6, time + attack);
-  master.gain.exponentialRampToValueAtTime(0.01, time + decay);
+  master.gain.linearRampToValueAtTime(0.5, time + 0.005); // 超高速アタック
+  master.gain.exponentialRampToValueAtTime(0.01, time + duration);
 
-  g2.gain.setValueAtTime(0.3, time); // 硬い響きを付与
-  g2.gain.exponentialRampToValueAtTime(0.001, time + 0.1); // 叩いた瞬間だけ鳴らす
+  g2.gain.setValueAtTime(0.4, time);
+  g2.gain.exponentialRampToValueAtTime(0.001, time + 0.08); // 打鍵の瞬間のみ
 
-  osc1.start(time); osc1.stop(time + decay);
-  osc2.start(time); osc2.stop(time + decay);
+  osc1.start(time); osc1.stop(time + duration);
+  osc2.start(time); osc2.stop(time + duration);
 }
 
-/* --- ドラム・エンジン --- */
+/* --- 楽器: ドラム --- */
 function playKick(time) {
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();
   osc.frequency.setValueAtTime(150, time);
   osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.2);
-  g.gain.setValueAtTime(1, time);
+  g.gain.setValueAtTime(0.8, time);
   g.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
   osc.connect(g); g.connect(audioCtx.destination);
   osc.start(time); osc.stop(time + 0.2);
 }
-function playSnare(time) {
-  const node = audioCtx.createBufferSource();
-  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
+function playSnare(time, vol = 0.3) {
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  node.buffer = buffer;
+  const node = audioCtx.createBufferSource(); node.buffer = buf;
   const g = audioCtx.createGain();
-  g.gain.setValueAtTime(0.3, time);
+  g.gain.setValueAtTime(vol, time);
   g.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
   node.connect(g); g.connect(audioCtx.destination);
   node.start(time);
@@ -195,25 +176,22 @@ function playHiHat(time, isOpen = false) {
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();
   osc.type = 'square'; osc.frequency.setValueAtTime(10000, time);
-  const f = audioCtx.createBiquadFilter();
-  f.type = 'highpass'; f.frequency.value = 8000;
-  g.gain.setValueAtTime(0.05, time);
+  const f = audioCtx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
+  g.gain.setValueAtTime(0.06, time);
   g.gain.exponentialRampToValueAtTime(0.01, time + (isOpen ? 0.2 : 0.05));
   osc.connect(f); f.connect(g); g.connect(audioCtx.destination);
   osc.start(time); osc.stop(time + 0.2);
 }
 
-/* --- ロジック --- */
+/* --- スケジューラ --- */
 function scheduler() {
   while (state.nextNoteTime < audioCtx.currentTime + 0.1) {
     const isEven = state.currentBeatGlobal % 2 === 0;
     let timingOffset = 0;
-    
-    // Shuffleの場合のみ、裏拍を遅らせる
+    // Shuffle: 16分音符の偶数番目を遅らせる
     if (state.drum === "Shuffle" && !isEven) {
-      timingOffset = (60.0 / state.bpm / 4) * 0.33; // スイング率33%
+      timingOffset = (60.0 / state.bpm / 4) * 0.35;
     }
-
     scheduleNote(state.currentBeatGlobal, state.nextNoteTime + timingOffset);
     state.nextNoteTime += (60.0 / state.bpm) / 4;
     state.currentBeatGlobal++;
@@ -226,56 +204,47 @@ function scheduleNote(beatNumber, time) {
   const chords = line.chords.split("-").map(c => c.trim()).filter(c => c);
   if (chords.length === 0) return;
 
-  const total16ths = 64; 
+  const total16ths = 64; // 4小節ループ
   const cycleBeat = beatNumber % total16ths;
-  const mBeat = cycleBeat % 16; 
+  const mBeat = cycleBeat % 16;
   const chordIdx = Math.floor((cycleBeat / total16ths) * chords.length);
   const currentChord = chords[chordIdx];
 
-  // --- BEAT連動ドラム ---
-  const hhInterval = 16 / state.beat; // 4BEAT=4, 8BEAT=2, 16BEAT=1
-  if (cycleBeat % hhInterval === 0) {
-    // Shuffle時は裏拍をOpen気味にしてノリを出す
-    playHiHat(time, (state.drum === "Shuffle" && cycleBeat % 2 !== 0));
-  }
-  
-  // キック・スネアの基本（スタイル別）
+  // --- ドラム・BEAT連動 ---
+  const hhDiv = (state.beat === 16) ? 1 : (state.beat === 8 ? 2 : 4);
+  if (cycleBeat % hhDiv === 0) playHiHat(time, (state.drum === "Shuffle" && cycleBeat % 2 !== 0));
+
+  // スタイル別リズム
   if (state.drum === "Trap") {
     if (mBeat === 0 || mBeat === 6 || mBeat === 10) playKick(time);
-    if (mBeat === 8) playSnare(time);
-  } else {
+    if (mBeat === 8) playSnare(time, 0.5);
+  } else if (state.drum === "Shuffle") {
+    if (mBeat === 0 || mBeat === 9) playKick(time);
+    if (mBeat === 4 || mBeat === 13) playSnare(time, 0.3);
+  } else { // Straight & Open
     if (mBeat === 0 || mBeat === 8) playKick(time);
-    if (mBeat === 4 || mBeat === 12) playSnare(time);
+    if (mBeat === 4 || mBeat === 12) playSnare(time, 0.3);
   }
 
-  // --- ピアノ演奏スタイル ---
+  // --- ピアノ奏法 ---
   const f = getFreq(currentChord);
   if (f > 0) {
-    const isChordChange = (cycleBeat % (total16ths / chords.length) === 0);
-    
+    const isChange = (cycleBeat % (total16ths / chords.length) === 0);
     if (state.drum === "Open") {
-        // アルペジオ
-        if (cycleBeat % 2 === 0) playPiano(f * [1, 1.25, 1.5, 2][(cycleBeat/2)%4], time, 0.8, "Open");
+      if (cycleBeat % 4 === 0) playPiano(f * [1, 1.25, 1.5, 2][(cycleBeat/4)%4], time, 1.5);
     } else if (state.drum === "Shuffle") {
-        // 跳ねるバッキング
-        if (isChordChange || cycleBeat % 4 === 0) {
-            const dur = (cycleBeat % 2 === 0) ? 0.4 : 0.1; // 表は長く、裏は短く
-            playPiano(f, time, dur);
-            playPiano(f * 1.25, time, dur);
-            playPiano(f * 1.5, time, dur);
-        }
+      if (isChange || cycleBeat % 4 === 0) {
+        const dur = (cycleBeat % 2 === 0) ? 0.3 : 0.08;
+        [1, 1.25, 1.5].forEach(m => playPiano(f * m, time, dur));
+      }
     } else if (state.drum === "Trap") {
-        if (isChordChange || mBeat % 4 === 2) playPiano(f, time, 0.1); // 短く鋭く
-    } else {
-        // Straight
-        if (isChordChange || mBeat === 8) {
-            playPiano(f, time, 1.0);
-            playPiano(f * 1.25, time, 1.0);
-            playPiano(f * 1.5, time, 1.0);
-        }
+      if (isChange || mBeat % 4 === 2) [1, 1.25, 1.5].forEach(m => playPiano(f * m, time, 0.08));
+    } else { // Straight
+      if (isChange || mBeat === 8) [1, 1.25, 1.5].forEach(m => playPiano(f * m, time, 1.0));
     }
   }
 
+  // 行移動
   if (cycleBeat === total16ths - 1) {
     let nextIdx = state.lines.findIndex((l, i) => i > state.currentLineIndex && l.loop);
     if (nextIdx === -1) nextIdx = state.lines.findIndex(l => l.loop);
@@ -283,13 +252,16 @@ function scheduleNote(beatNumber, time) {
   }
 }
 
-/* --- ヘルパー --- */
+/* --- ヘルパー: 周波数とトランスポーズ --- */
 function getFreq(chordName) {
   if (!chordName) return 0;
   const noteMap = { "C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11 };
   let base = chordName.replace(/m|dim|7|M7|sus4|aug/g, "").split("/")[0];
   let index = noteMap[base];
-  return (index === undefined) ? 0 : 440 * Math.pow(2, (index - 9 - 12) / 12);
+  if (index === undefined) return 0;
+  // ★重要: KEYのインデックスを加算してトランスポーズ
+  let finalIndex = index + state.keyIndex;
+  return 440 * Math.pow(2, (finalIndex - 9 - 12) / 12);
 }
 
 function applyTemplate(degStr) {
@@ -303,42 +275,67 @@ function applyTemplate(degStr) {
   }).join("-");
 }
 
+/* --- UI描画 --- */
 function render() {
   const container = document.getElementById('line-container');
   const addBtn = document.getElementById('add-btn');
   container.querySelectorAll('.line-row').forEach(r => r.remove());
+
   state.lines.forEach((line, idx) => {
-    const row = document.createElement('div'); row.className = 'line-row';
-    if (idx === state.currentLineIndex && state.isPlaying) row.classList.add('playing');
-    const lBtn = document.createElement('div'); lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
+    const row = document.createElement('div');
+    row.className = `line-row ${ (idx === state.currentLineIndex && state.isPlaying) ? 'playing' : '' }`;
+    
+    // Loop
+    const lBtn = document.createElement('div');
+    lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
     lBtn.onclick = () => { line.loop = !line.loop; render(); };
+
+    // Part (復活)
     const pWrap = document.createElement('div'); pWrap.className = 'part-wrapper';
     const pSel = document.createElement('select'); pSel.className = 'part-select';
     PARTS.forEach(p => pSel.add(new Option(p, p))); pSel.value = line.part;
+    pSel.onchange = (e) => line.part = e.target.value;
+    pWrap.appendChild(pSel);
+
+    // Chord (復活)
     const cWrap = document.createElement('div'); cWrap.className = 'chord-wrapper';
-    const cIn = document.createElement('input'); cIn.className = 'chords-input'; cIn.value = line.chords;
+    const cIn = document.createElement('input'); cIn.className = 'chords-input';
+    cIn.value = line.chords;
     cIn.onchange = (e) => { line.chords = e.target.value; line.templateName = "Custom"; render(); };
+    cWrap.appendChild(cIn);
+
+    // Template
     const tDisp = document.createElement('div'); tDisp.className = 'template-display';
     tDisp.innerHTML = `<div class="td-name">${line.templateName}</div><div class="td-deg">${line.templateDeg || ""}</div>`;
     tDisp.onclick = () => showModal(idx);
+
+    // Delete
     const dBtn = document.createElement('div'); dBtn.className = 'del-btn'; dBtn.textContent = '×';
     dBtn.onclick = () => { if(state.lines.length > 1) { state.lines.splice(idx, 1); render(); } };
-    row.append(lBtn, pWrap, cWrap, tDisp, dBtn); container.insertBefore(row, addBtn);
+
+    row.append(lBtn, pWrap, cWrap, tDisp, dBtn);
+    container.insertBefore(row, addBtn);
   });
 }
 
-function updateUIActive() { document.querySelectorAll('.line-row').forEach((el, i) => el.classList.toggle('playing', i === state.currentLineIndex)); }
+function updateUIActive() {
+  document.querySelectorAll('.line-row').forEach((el, i) => {
+    el.classList.toggle('playing', i === state.currentLineIndex);
+  });
+}
 
 function showModal(lineIdx) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
-  content.innerHTML = '<div class="modal-title">Template</div>';
-  ALL_TEMPLATES.forEach(t => {
+  content.innerHTML = '<h2 style="text-align:center">Template</h2>';
+  TEMPLATES.forEach(t => {
     const item = document.createElement('div'); item.className = 'modal-item';
-    item.innerHTML = `<strong>${t.name}</strong><br><small>${t.deg}</small>`;
+    item.innerHTML = `<strong>${t.name}</strong><br><small>${t.deg} - ${t.usage}</small>`;
     item.onclick = () => {
-      state.lines[lineIdx].templateName = t.name; state.lines[lineIdx].templateDeg = t.deg;
-      state.lines[lineIdx].chords = applyTemplate(t.deg); overlay.style.display = 'none'; render();
+      state.lines[lineIdx].templateName = t.name;
+      state.lines[lineIdx].templateDeg = t.deg;
+      state.lines[lineIdx].chords = applyTemplate(t.deg);
+      overlay.style.display = 'none'; render();
     };
     content.appendChild(item);
   });
@@ -346,6 +343,7 @@ function showModal(lineIdx) {
   overlay.onclick = (e) => { if(e.target===overlay) overlay.style.display='none'; };
 }
 
+/* --- コントロール --- */
 document.getElementById('play-btn').onclick = async () => {
   initAudio(); if (audioCtx.state === 'suspended') await audioCtx.resume();
   if (state.isPlaying) {
@@ -360,13 +358,21 @@ document.getElementById('play-btn').onclick = async () => {
   }
 };
 
-document.getElementById('add-btn').onclick = () => { state.lines.push({ loop: false, part: "Aメロ", chords: "", templateName: "Custom" }); render(); };
+document.getElementById('add-btn').onclick = () => {
+  state.lines.push({ loop: false, part: "Aメロ", chords: "", templateName: "Custom" });
+  render();
+};
 
 window.onload = () => {
   const b = document.getElementById('bpm-select'); for(let i=60;i<=200;i++) b.add(new Option(i,i)); b.value=state.bpm;
   const k = document.getElementById('key-select'); KEYS.forEach((n,i)=> k.add(new Option(n,i))); k.value=state.keyIndex;
   b.onchange = (e) => state.bpm = parseInt(e.target.value);
-  k.onchange = (e) => { state.keyIndex = parseInt(e.target.value); render(); };
+  k.onchange = (e) => { 
+    state.keyIndex = parseInt(e.target.value); 
+    // KEY変更時に既存のテンプレ適用行をトランスポーズ
+    state.lines.forEach(l => { if(l.templateDeg) l.chords = applyTemplate(l.templateDeg); });
+    render(); 
+  };
   document.getElementById('beat-select').onchange = (e) => state.beat = parseInt(e.target.value);
   document.getElementById('drum-select').onchange = (e) => state.drum = e.target.value;
   render();
