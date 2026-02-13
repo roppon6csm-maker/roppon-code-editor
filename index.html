@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Roppon Code Editor Ver.2.5</title>
+<title>Roppon Code Editor Ver.2.6</title>
 <style>
 /* --- 1. 基本設定 --- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
@@ -41,7 +41,8 @@ main::-webkit-scrollbar { display: none; }
 .line-row { height: 90px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #161616; border-radius: 10px; border: 1px solid #222; padding: 0 1vw; position: relative; }
 .line-row.playing { border: 2px solid #00E5FF; box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); background: #222; }
 
-.loop-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #444; background: #000; margin: 0 auto; transition: 0.2s; }
+/* ★ループボタン縮小修正 */
+.loop-btn { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #444; background: #000; margin: 0 auto; transition: 0.2s; }
 .loop-btn.active { background-color: #00E5FF; border-color: #00E5FF; box-shadow: 0 0 8px #00E5FF; }
 
 .part-wrapper { width: 18%; }
@@ -67,11 +68,6 @@ main::-webkit-scrollbar { display: none; }
 /* --- 5. モーダル --- */
 #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 #modal-content { width: 92%; max-height: 85%; background: #1a1a1a; border-radius: 15px; overflow-y: auto; padding: 20px; border: 1px solid #333; }
-.modal-title { text-align: center; font-size: 5vw; color: #fff; margin-bottom: 20px; }
-.modal-section { color: #888; font-size: 3.5vw; margin: 15px 0 8px 0; border-bottom: 1px solid #333; }
-.modal-item { background: #252525; margin-bottom: 10px; padding: 12px; border-radius: 10px; }
-.m-name { font-size: 4vw; font-weight: bold; color: #fff; }
-.m-deg { font-size: 3.5vw; color: #00E5FF; }
 </style>
 </head>
 <body>
@@ -99,7 +95,7 @@ main::-webkit-scrollbar { display: none; }
 
 <script>
 /**
- * Roppon Code Editor Ver.2.5
+ * Roppon Code Editor Ver.2.6
  */
 
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -114,12 +110,7 @@ const TEMPLATE_CATEGORIES = [
   ]},
   { cat: "J-POP特化進行", list: [
     { name: "小室進行", deg: "vi-IV-V-I", usage: "90s感・疾走" },
-    { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" },
-    { name: "カノン進行", deg: "I-V-vi-iii-IV-I-IV-V", usage: "長尺サビ" }
-  ]},
-  { cat: "エモ・ロック寄り", list: [
-    { name: "エモ進行", deg: "vi-I-V-IV", usage: "エモい" },
-    { name: "ロック定番", deg: "I-bVII-IV", usage: "ロック定番展開" }
+    { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" }
   ]}
 ];
 
@@ -129,8 +120,7 @@ TEMPLATE_CATEGORIES.forEach(c => ALL_TEMPLATES = ALL_TEMPLATES.concat(c.list));
 let state = {
   bpm: 164, keyIndex: 0, beat: 8, drum: "Straight", isPlaying: false,
   lines: [
-    { loop: true, part: "イントロ", chords: "F-G-Am-Am", templateName: "王道進行", templateDeg: "I-V-vi-IV", templateUsage: "サビ最頻出" },
-    { loop: true, part: "Aメロ", chords: "Am-F-C-G", templateName: "マイナー王道", templateDeg: "vi-IV-I-V", templateUsage: "切な系サビ" }
+    { loop: true, part: "イントロ", chords: "F-G-Am-Am", templateName: "王道進行", templateDeg: "I-V-vi-IV", templateUsage: "サビ最頻出" }
   ],
   currentLineIndex: -1, currentBeatGlobal: 0, nextNoteTime: 0
 };
@@ -140,94 +130,92 @@ let schedulerInterval = null;
 
 function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
-/* --- 楽器生成エンジン --- */
-
-// 1. ピアノ（改善版：倍音とエンベロープ）
+/* --- 高品位ピアノ・エンジン (Hard/Bright Piano) --- */
 function playPiano(freq, time, duration, style) {
   if (freq <= 0) return;
-  const mainGain = audioCtx.createGain();
-  mainGain.connect(audioCtx.destination);
+  const master = audioCtx.createGain();
+  master.connect(audioCtx.destination);
   
-  const oscs = [
-    { type: 'triangle', detune: 0, vol: 0.5 },
-    { type: 'sine', detune: 5, vol: 0.3 },
-    { type: 'triangle', detune: -5, vol: 0.2 }
-  ];
+  // 1. 基音と金属的な倍音 (FM)
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator(); // 金属音用
+  const g1 = audioCtx.createGain();
+  const g2 = audioCtx.createGain();
 
-  oscs.forEach(cfg => {
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = cfg.type;
-    osc.frequency.setValueAtTime(freq, time);
-    osc.detune.setValueAtTime(cfg.detune, time);
-    osc.connect(g); g.connect(mainGain);
-    osc.start(time); osc.stop(time + duration);
-  });
+  osc1.type = 'triangle'; 
+  osc1.frequency.setValueAtTime(freq, time);
+  
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(freq * 4, time); // 硬さを出す高域倍音
 
-  mainGain.gain.setValueAtTime(0, time);
-  mainGain.gain.linearRampToValueAtTime(0.4, time + 0.01); // 鋭いアタック
-  mainGain.gain.exponentialRampToValueAtTime(0.01, time + duration); // 自然な減衰
+  g1.connect(master);
+  g2.connect(master);
+  osc1.connect(g1);
+  osc2.connect(g2);
+
+  // エンベロープ設定 (硬いアタック)
+  const attack = 0.005;
+  const decay = duration;
+  
+  master.gain.setValueAtTime(0, time);
+  master.gain.linearRampToValueAtTime(0.6, time + attack);
+  master.gain.exponentialRampToValueAtTime(0.01, time + decay);
+
+  g2.gain.setValueAtTime(0.3, time); // 硬い響きを付与
+  g2.gain.exponentialRampToValueAtTime(0.001, time + 0.1); // 叩いた瞬間だけ鳴らす
+
+  osc1.start(time); osc1.stop(time + decay);
+  osc2.start(time); osc2.stop(time + decay);
 }
 
-// 2. キック（重低音）
-function playKick(time, style) {
+/* --- ドラム・エンジン --- */
+function playKick(time) {
   const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.frequency.setValueAtTime(style === "Trap" ? 180 : 150, time);
-  osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.3);
-  gain.gain.setValueAtTime(1.0, time);
-  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(time); osc.stop(time + 0.3);
+  const g = audioCtx.createGain();
+  osc.frequency.setValueAtTime(150, time);
+  osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.2);
+  g.gain.setValueAtTime(1, time);
+  g.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+  osc.connect(g); g.connect(audioCtx.destination);
+  osc.start(time); osc.stop(time + 0.2);
 }
-
-// 3. スネア（ノイズ成分）
 function playSnare(time) {
-  const bufferSize = audioCtx.sampleRate * 0.1;
-  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const node = audioCtx.createBufferSource();
+  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-  const noise = audioCtx.createBufferSource();
-  noise.buffer = buffer;
-  const noiseFilter = audioCtx.createBiquadFilter();
-  noiseFilter.type = 'highpass'; noiseFilter.frequency.value = 1000;
-  const noiseEnvelope = audioCtx.createGain();
-  noiseEnvelope.gain.setValueAtTime(0.5, time);
-  noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-  noise.connect(noiseFilter); noiseFilter.connect(noiseEnvelope); noiseEnvelope.connect(audioCtx.destination);
-  noise.start(time);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  node.buffer = buffer;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0.3, time);
+  g.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+  node.connect(g); g.connect(audioCtx.destination);
+  node.start(time);
 }
-
-// 4. ハイハット（金属音）
 function playHiHat(time, isOpen = false) {
   const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
   osc.type = 'square'; osc.frequency.setValueAtTime(10000, time);
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = 'highpass'; filter.frequency.value = 8000;
-  const gain = audioCtx.createGain();
-  gain.gain.setValueAtTime(0.1, time);
-  gain.gain.exponentialRampToValueAtTime(0.01, time + (isOpen ? 0.3 : 0.05));
-  osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(time); osc.stop(time + 0.3);
+  const f = audioCtx.createBiquadFilter();
+  f.type = 'highpass'; f.frequency.value = 8000;
+  g.gain.setValueAtTime(0.05, time);
+  g.gain.exponentialRampToValueAtTime(0.01, time + (isOpen ? 0.2 : 0.05));
+  osc.connect(f); f.connect(g); g.connect(audioCtx.destination);
+  osc.start(time); osc.stop(time + 0.2);
 }
 
-/* --- ロジックコア --- */
-
-function getFreq(chordName) {
-  if (!chordName) return 0;
-  const noteMap = { "C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11 };
-  let base = chordName.replace(/m|dim|7|M7|sus4|aug/g, "").split("/")[0];
-  let index = noteMap[base];
-  if (index === undefined) return 0;
-  // オクターブ3〜4付近に調整
-  return 440 * Math.pow(2, (index - 9 - 12) / 12);
-}
-
+/* --- ロジック --- */
 function scheduler() {
   while (state.nextNoteTime < audioCtx.currentTime + 0.1) {
-    scheduleNote(state.currentBeatGlobal, state.nextNoteTime);
-    const secondsPer16th = (60.0 / state.bpm) / 4;
-    state.nextNoteTime += secondsPer16th;
+    const isEven = state.currentBeatGlobal % 2 === 0;
+    let timingOffset = 0;
+    
+    // Shuffleの場合のみ、裏拍を遅らせる
+    if (state.drum === "Shuffle" && !isEven) {
+      timingOffset = (60.0 / state.bpm / 4) * 0.33; // スイング率33%
+    }
+
+    scheduleNote(state.currentBeatGlobal, state.nextNoteTime + timingOffset);
+    state.nextNoteTime += (60.0 / state.bpm) / 4;
     state.currentBeatGlobal++;
   }
 }
@@ -238,67 +226,70 @@ function scheduleNote(beatNumber, time) {
   const chords = line.chords.split("-").map(c => c.trim()).filter(c => c);
   if (chords.length === 0) return;
 
-  const total16ths = 64; // ★修正：4小節分（16x4）
+  const total16ths = 64; 
   const cycleBeat = beatNumber % total16ths;
-  const measureBeat = cycleBeat % 16; // 1小節内の位置
+  const mBeat = cycleBeat % 16; 
   const chordIdx = Math.floor((cycleBeat / total16ths) * chords.length);
   const currentChord = chords[chordIdx];
 
-  // --- ドラムパターン定義 ---
-  const hhInterval = state.beat === 16 ? 1 : (state.beat === 8 ? 2 : 4);
+  // --- BEAT連動ドラム ---
+  const hhInterval = 16 / state.beat; // 4BEAT=4, 8BEAT=2, 16BEAT=1
+  if (cycleBeat % hhInterval === 0) {
+    // Shuffle時は裏拍をOpen気味にしてノリを出す
+    playHiHat(time, (state.drum === "Shuffle" && cycleBeat % 2 !== 0));
+  }
   
-  if (state.drum === "Shuffle") {
-    // シャッフル（3連の跳ね）
-    if (cycleBeat % 3 !== 1) playHiHat(time);
-    if (measureBeat === 0 || measureBeat === 8) playKick(time, "Shuffle");
-    if (measureBeat === 4 || measureBeat === 12) playSnare(time);
-  } else if (state.drum === "Trap") {
-    // トラップ（激しいHHロールと重いキック）
-    if (cycleBeat % (measureBeat > 8 ? 1 : 2) === 0) playHiHat(time);
-    if (measureBeat === 0 || measureBeat === 6 || measureBeat === 10) playKick(time, "Trap");
-    if (measureBeat === 8) playSnare(time);
-  } else if (state.drum === "Open") {
-    // オープン（ゆったり）
-    if (measureBeat % 8 === 0) playHiHat(time, true);
-    if (measureBeat === 0) playKick(time);
-    if (measureBeat === 8) playSnare(time);
+  // キック・スネアの基本（スタイル別）
+  if (state.drum === "Trap") {
+    if (mBeat === 0 || mBeat === 6 || mBeat === 10) playKick(time);
+    if (mBeat === 8) playSnare(time);
   } else {
-    // Straight
-    if (cycleBeat % hhInterval === 0) playHiHat(time);
-    if (measureBeat === 0 || measureBeat === 8) playKick(time);
-    if (measureBeat === 4 || measureBeat === 12) playSnare(time);
+    if (mBeat === 0 || mBeat === 8) playKick(time);
+    if (mBeat === 4 || mBeat === 12) playSnare(time);
   }
 
-  // --- ピアノ演奏 ---
-  if (cycleBeat % (total16ths / chords.length) === 0) {
-    const f = getFreq(currentChord);
-    if (f > 0) {
-      playPiano(f, time, 1.5, state.drum);
-      playPiano(f * (currentChord.includes("m") ? 1.189 : 1.259), time, 1.5, state.drum);
-      playPiano(f * 1.498, time, 1.5, state.drum);
+  // --- ピアノ演奏スタイル ---
+  const f = getFreq(currentChord);
+  if (f > 0) {
+    const isChordChange = (cycleBeat % (total16ths / chords.length) === 0);
+    
+    if (state.drum === "Open") {
+        // アルペジオ
+        if (cycleBeat % 2 === 0) playPiano(f * [1, 1.25, 1.5, 2][(cycleBeat/2)%4], time, 0.8, "Open");
+    } else if (state.drum === "Shuffle") {
+        // 跳ねるバッキング
+        if (isChordChange || cycleBeat % 4 === 0) {
+            const dur = (cycleBeat % 2 === 0) ? 0.4 : 0.1; // 表は長く、裏は短く
+            playPiano(f, time, dur);
+            playPiano(f * 1.25, time, dur);
+            playPiano(f * 1.5, time, dur);
+        }
+    } else if (state.drum === "Trap") {
+        if (isChordChange || mBeat % 4 === 2) playPiano(f, time, 0.1); // 短く鋭く
+    } else {
+        // Straight
+        if (isChordChange || mBeat === 8) {
+            playPiano(f, time, 1.0);
+            playPiano(f * 1.25, time, 1.0);
+            playPiano(f * 1.5, time, 1.0);
+        }
     }
   }
 
-  // 行の切り替え
   if (cycleBeat === total16ths - 1) {
     let nextIdx = state.lines.findIndex((l, i) => i > state.currentLineIndex && l.loop);
     if (nextIdx === -1) nextIdx = state.lines.findIndex(l => l.loop);
-    if (nextIdx !== -1) {
-      state.currentLineIndex = nextIdx;
-      setTimeout(updateUIActive, 0);
-    }
+    if (nextIdx !== -1) { state.currentLineIndex = nextIdx; setTimeout(updateUIActive, 0); }
   }
 }
 
-/* --- UI管理 --- */
-
-function updateAllChordsByKey() {
-  state.lines.forEach(line => {
-    if (line.templateDeg !== "---") {
-      line.chords = applyTemplate(line.templateDeg);
-    }
-  });
-  render();
+/* --- ヘルパー --- */
+function getFreq(chordName) {
+  if (!chordName) return 0;
+  const noteMap = { "C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11 };
+  let base = chordName.replace(/m|dim|7|M7|sus4|aug/g, "").split("/")[0];
+  let index = noteMap[base];
+  return (index === undefined) ? 0 : 440 * Math.pow(2, (index - 9 - 12) / 12);
 }
 
 function applyTemplate(degStr) {
@@ -316,101 +307,66 @@ function render() {
   const container = document.getElementById('line-container');
   const addBtn = document.getElementById('add-btn');
   container.querySelectorAll('.line-row').forEach(r => r.remove());
-
   state.lines.forEach((line, idx) => {
-    const row = document.createElement('div');
-    row.className = 'line-row';
+    const row = document.createElement('div'); row.className = 'line-row';
     if (idx === state.currentLineIndex && state.isPlaying) row.classList.add('playing');
-    
-    const lBtn = document.createElement('div');
-    lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
+    const lBtn = document.createElement('div'); lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
     lBtn.onclick = () => { line.loop = !line.loop; render(); };
-
     const pWrap = document.createElement('div'); pWrap.className = 'part-wrapper';
     const pSel = document.createElement('select'); pSel.className = 'part-select';
     PARTS.forEach(p => pSel.add(new Option(p, p))); pSel.value = line.part;
-    pSel.onchange = (e) => line.part = e.target.value;
-    pWrap.appendChild(pSel);
-
     const cWrap = document.createElement('div'); cWrap.className = 'chord-wrapper';
-    const cIn = document.createElement('input'); cIn.className = 'chords-input';
-    cIn.value = line.chords;
-    cIn.onchange = (e) => { line.chords = e.target.value; line.templateName = "Custom"; line.templateDeg = "---"; render(); };
-    cWrap.appendChild(cIn);
-
+    const cIn = document.createElement('input'); cIn.className = 'chords-input'; cIn.value = line.chords;
+    cIn.onchange = (e) => { line.chords = e.target.value; line.templateName = "Custom"; render(); };
     const tDisp = document.createElement('div'); tDisp.className = 'template-display';
-    tDisp.innerHTML = `<div class="td-name">${line.templateName}</div><div class="td-deg">${line.templateDeg}</div><div class="td-usage">${line.templateUsage}</div>`;
+    tDisp.innerHTML = `<div class="td-name">${line.templateName}</div><div class="td-deg">${line.templateDeg || ""}</div>`;
     tDisp.onclick = () => showModal(idx);
-
     const dBtn = document.createElement('div'); dBtn.className = 'del-btn'; dBtn.textContent = '×';
     dBtn.onclick = () => { if(state.lines.length > 1) { state.lines.splice(idx, 1); render(); } };
-
-    row.append(lBtn, pWrap, cWrap, tDisp, dBtn);
-    container.insertBefore(row, addBtn);
+    row.append(lBtn, pWrap, cWrap, tDisp, dBtn); container.insertBefore(row, addBtn);
   });
 }
 
-function updateUIActive() {
-  document.querySelectorAll('.line-row').forEach((el, i) => {
-    el.classList.toggle('playing', i === state.currentLineIndex);
-  });
-}
+function updateUIActive() { document.querySelectorAll('.line-row').forEach((el, i) => el.classList.toggle('playing', i === state.currentLineIndex)); }
 
 function showModal(lineIdx) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
-  content.innerHTML = '<div class="modal-title">Template Select</div>';
-  TEMPLATE_CATEGORIES.forEach(cat => {
-    const section = document.createElement('div'); section.className = 'modal-section'; section.textContent = cat.cat;
-    content.appendChild(section);
-    cat.list.forEach(t => {
-      const item = document.createElement('div'); item.className = 'modal-item';
-      item.innerHTML = `<div class="m-name">${t.name}</div><div class="m-deg">${t.deg}</div>`;
-      item.onclick = () => {
-        const l = state.lines[lineIdx];
-        l.templateName = t.name; l.templateDeg = t.deg; l.templateUsage = t.usage;
-        l.chords = applyTemplate(t.deg);
-        overlay.style.display = 'none'; render();
-      };
-      content.appendChild(item);
-    });
+  content.innerHTML = '<div class="modal-title">Template</div>';
+  ALL_TEMPLATES.forEach(t => {
+    const item = document.createElement('div'); item.className = 'modal-item';
+    item.innerHTML = `<strong>${t.name}</strong><br><small>${t.deg}</small>`;
+    item.onclick = () => {
+      state.lines[lineIdx].templateName = t.name; state.lines[lineIdx].templateDeg = t.deg;
+      state.lines[lineIdx].chords = applyTemplate(t.deg); overlay.style.display = 'none'; render();
+    };
+    content.appendChild(item);
   });
   overlay.style.display = 'flex';
   overlay.onclick = (e) => { if(e.target===overlay) overlay.style.display='none'; };
 }
 
-/* --- 起動設定 --- */
-
 document.getElementById('play-btn').onclick = async () => {
-  initAudio();
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  initAudio(); if (audioCtx.state === 'suspended') await audioCtx.resume();
   if (state.isPlaying) {
-    state.isPlaying = false;
-    clearInterval(schedulerInterval);
-    document.getElementById('play-btn').className = "play-btn play";
-    document.getElementById('play-btn').textContent = "PLAY";
+    state.isPlaying = false; clearInterval(schedulerInterval);
+    document.getElementById('play-btn').className = "play-btn play"; document.getElementById('play-btn').textContent = "PLAY";
     state.currentLineIndex = -1; updateUIActive();
   } else {
-    state.isPlaying = true;
-    state.currentLineIndex = state.lines.findIndex(l => l.loop);
-    state.currentBeatGlobal = 0;
-    state.nextNoteTime = audioCtx.currentTime + 0.1;
-    document.getElementById('play-btn').className = "play-btn stop";
-    document.getElementById('play-btn').textContent = "STOP";
+    state.isPlaying = true; state.currentLineIndex = state.lines.findIndex(l => l.loop);
+    state.currentBeatGlobal = 0; state.nextNoteTime = audioCtx.currentTime + 0.1;
+    document.getElementById('play-btn').className = "play-btn stop"; document.getElementById('play-btn').textContent = "STOP";
     schedulerInterval = setInterval(scheduler, 25);
   }
 };
 
-document.getElementById('add-btn').onclick = () => {
-  state.lines.push({ loop: false, part: "Aメロ", chords: "", templateName: "Custom", templateDeg: "---", templateUsage: "Select..." });
-  render();
-};
+document.getElementById('add-btn').onclick = () => { state.lines.push({ loop: false, part: "Aメロ", chords: "", templateName: "Custom" }); render(); };
 
 window.onload = () => {
   const b = document.getElementById('bpm-select'); for(let i=60;i<=200;i++) b.add(new Option(i,i)); b.value=state.bpm;
   const k = document.getElementById('key-select'); KEYS.forEach((n,i)=> k.add(new Option(n,i))); k.value=state.keyIndex;
   b.onchange = (e) => state.bpm = parseInt(e.target.value);
-  k.onchange = (e) => { state.keyIndex = parseInt(e.target.value); updateAllChordsByKey(); };
+  k.onchange = (e) => { state.keyIndex = parseInt(e.target.value); render(); };
   document.getElementById('beat-select').onchange = (e) => state.beat = parseInt(e.target.value);
   document.getElementById('drum-select').onchange = (e) => state.drum = e.target.value;
   render();
