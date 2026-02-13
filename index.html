@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Roppon Code Editor Ver.2.3</title>
+<title>Roppon Code Editor Ver.2.4</title>
 <style>
 /* --- 1. 基本設定 --- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
@@ -13,7 +13,7 @@ input, select, button { outline: none; border: none; background: none; color: in
 #app { display: flex; flex-direction: column; width: 100%; height: 100%; }
 
 /* --- 2. グローバル設定エリア --- */
-header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0; background: #000; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid #333; z-index: 10; }
+header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0; background: #000; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid #333; z-index: 100; }
 .app-title { font-size: 5vw; font-weight: 800; color: #666; margin: 10px 0; letter-spacing: 1px; }
 .header-settings { width: 96%; display: flex; justify-content: space-between; gap: 2vw; }
 
@@ -35,55 +35,47 @@ header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0
 .col-h-tmpl { width: 30%; text-align: center; } 
 .col-h-del { width: 10%; }
 
-main { flex: 1; overflow-y: auto; padding: 10px 2vw 160px 2vw; -webkit-overflow-scrolling: touch; }
+main { flex: 1; overflow-y: auto; padding: 10px 2vw 220px 2vw; -webkit-overflow-scrolling: touch; }
 main::-webkit-scrollbar { display: none; }
 
-.line-row { height: 75px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; background: #161616; border-radius: 8px; border: 1px solid #222; padding: 0 1vw; position: relative; }
+.line-row { height: 85px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #161616; border-radius: 10px; border: 1px solid #222; padding: 0 1vw; position: relative; }
 .line-row.playing { border: 2px solid #00E5FF; box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); background: #222; }
 
-/* Loop Button (Radio logic visually) */
-.loop-btn { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #444; background: #000; margin: 0 auto; transition: 0.2s; }
+.loop-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #444; background: #000; margin: 0 auto; transition: 0.2s; }
 .loop-btn.active { background-color: #00E5FF; border-color: #00E5FF; box-shadow: 0 0 8px #00E5FF; }
 
-/* Part Selector */
-.part-wrapper { width: 18%; height: 100%; display: flex; align-items: center; justify-content: center; }
-.part-select { width: 100%; font-size: 3vw; color: #fff; background: #222; border-radius: 4px; padding: 4px 0; text-align: center; border: 1px solid #333; }
+.part-wrapper { width: 18%; }
+.part-select { width: 100%; font-size: 3.2vw; color: #fff; background: #222; border-radius: 4px; padding: 6px 0; text-align: center; border: 1px solid #333; }
 
-/* Chords Input */
-.chord-wrapper { width: 32%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 1vw; }
-.chords-input { width: 100%; height: 60%; background: #000; border: 1px solid #333; border-radius: 4px; color: #00E5FF; font-size: 3.5vw; text-align: center; font-weight: bold; }
+.chord-wrapper { width: 32%; padding: 0 1vw; }
+.chords-input { width: 100%; height: 45px; background: #000; border: 1px solid #333; border-radius: 4px; color: #00E5FF; font-size: 4vw; text-align: center; font-weight: bold; }
 
-/* Template Display (3 lines) */
-.template-display { width: 30%; height: 85%; background: #222; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 0 6px; border: 1px solid #444; overflow: hidden; cursor: pointer; }
-.td-name { font-size: 2.2vw; font-weight: bold; color: #fff; white-space: nowrap; width: 100%; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-.td-deg { font-size: 1.8vw; color: #00E5FF; white-space: nowrap; width: 100%; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-.td-usage { font-size: 1.6vw; color: #aaa; white-space: nowrap; width: 100%; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+/* テンプレート表示エリア（文字サイズを最大化） */
+.template-display { width: 30%; height: 80%; background: #222; border-radius: 6px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: flex-start; padding: 4px 8px; border: 1px solid #444; overflow: hidden; }
+.td-name { font-size: 3.2vw; font-weight: bold; color: #fff; white-space: nowrap; line-height: 1.1; }
+.td-deg { font-size: 2.8vw; color: #00E5FF; white-space: nowrap; line-height: 1.1; }
+.td-usage { font-size: 2.4vw; color: #aaa; white-space: nowrap; line-height: 1.1; }
 
-/* Delete Button */
-.del-btn { width: 10%; height: 100%; display: flex; align-items: center; justify-content: center; color: #444; font-size: 5vw; }
-.del-btn:active { color: #FF3B30; }
+.del-btn { width: 10%; text-align: center; color: #444; font-size: 6vw; }
 
-/* Add Button */
-.add-btn { margin-top: 10px; width: 100%; height: 50px; border: 2px dashed #333; border-radius: 8px; color: #555; font-size: 24px; display: flex; align-items: center; justify-content: center; }
-.add-btn:active { background: #111; color: #888; }
+.add-btn { margin-top: 10px; width: 100%; height: 60px; border: 2px dashed #333; border-radius: 10px; color: #555; font-size: 30px; display: flex; align-items: center; justify-content: center; }
 
-/* --- 4. 再生コントロールエリア --- */
-.controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; height: 140px; pointer-events: none; background: linear-gradient(to top, #000 70%, transparent); display: flex; justify-content: center; align-items: center; z-index: 20; }
-.play-btn { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; letter-spacing: 1px; pointer-events: auto; transition: 0.2s; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
-.play-btn.play { background: #fff; color: #000; border: 4px solid #333; }
-.play-btn.stop { background: #FF3B30; color: #fff; border: 4px solid #A00; box-shadow: 0 0 20px rgba(255, 59, 48, 0.6); }
+/* --- 4. 再生コントロールエリア（表示切れ修正） --- */
+.controls-overlay { position: fixed; bottom: 0; left: 0; width: 100%; height: 180px; pointer-events: none; background: linear-gradient(to top, #000 75%, transparent); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; padding-bottom: env(safe-area-inset-bottom); }
+.play-btn { width: 90px; height: 90px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; letter-spacing: 1px; pointer-events: auto; transition: 0.1s; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+.play-btn.play { background: #fff; color: #000; border: 5px solid #333; }
+.play-btn.stop { background: #FF3B30; color: #fff; border: 5px solid #800; box-shadow: 0 0 25px rgba(255, 59, 48, 0.5); }
+.play-btn:active { transform: scale(0.95); }
 
 /* --- 5. モーダル --- */
-#modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-#modal-content { width: 90%; max-height: 80%; background: #1a1a1a; border-radius: 12px; overflow-y: auto; padding: 20px; border: 1px solid #333; }
-.modal-title { text-align: center; font-size: 5vw; color: #fff; margin-bottom: 15px; font-weight: bold; }
-.modal-section { color: #888; font-size: 3vw; margin: 15px 0 5px 0; border-bottom: 1px solid #333; padding-bottom: 3px; }
-.modal-item { background: #252525; margin-bottom: 8px; padding: 10px; border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column; }
-.modal-item:active { background: #333; border-color: #00E5FF; }
-.m-name { font-size: 3.5vw; font-weight: bold; color: #fff; }
-.m-deg { font-size: 3vw; color: #00E5FF; margin: 2px 0; }
-.m-usage { font-size: 2.5vw; color: #aaa; }
-
+#modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+#modal-content { width: 92%; max-height: 85%; background: #1a1a1a; border-radius: 15px; overflow-y: auto; padding: 20px; border: 1px solid #333; }
+.modal-title { text-align: center; font-size: 5vw; color: #fff; margin-bottom: 20px; font-weight: bold; }
+.modal-section { color: #888; font-size: 3.5vw; margin: 15px 0 8px 0; border-bottom: 1px solid #333; padding-bottom: 5px; }
+.modal-item { background: #252525; margin-bottom: 10px; padding: 12px; border-radius: 10px; border: 1px solid #333; }
+.m-name { font-size: 4vw; font-weight: bold; color: #fff; }
+.m-deg { font-size: 3.5vw; color: #00E5FF; margin: 4px 0; }
+.m-usage { font-size: 3vw; color: #aaa; }
 </style>
 </head>
 <body>
@@ -92,276 +84,116 @@ main::-webkit-scrollbar { display: none; }
   <header>
     <div class="app-title">Roppon Code Editor</div>
     <div class="header-settings">
-      <div class="setting-group">
-        <div class="setting-label">BPM</div>
-        <select id="bpm-select" class="global-select"></select>
-      </div>
-      <div class="setting-group">
-        <div class="setting-label">KEY</div>
-        <select id="key-select" class="global-select"></select>
-      </div>
-      <div class="setting-group">
-        <div class="setting-label">BEAT</div>
-        <select id="beat-select" class="global-select">
-          <option value="4">4</option>
-          <option value="8" selected>8</option>
-          <option value="16">16</option>
-        </select>
-      </div>
-      <div class="setting-group">
-        <div class="setting-label">DRUM</div>
-        <select id="drum-select" class="global-select">
-          <option value="Straight">Straight</option>
-          <option value="Shuffle" selected>Shuffle</option>
-          <option value="Open">Open</option>
-          <option value="Trap">Trap</option>
-        </select>
-      </div>
+      <div class="setting-group"><div class="setting-label">BPM</div><select id="bpm-select" class="global-select"></select></div>
+      <div class="setting-group"><div class="setting-label">KEY</div><select id="key-select" class="global-select"></select></div>
+      <div class="setting-group"><div class="setting-label">BEAT</div><select id="beat-select" class="global-select"><option value="4">4</option><option value="8" selected>8</option><option value="16">16</option></select></div>
+      <div class="setting-group"><div class="setting-label">DRUM</div><select id="drum-select" class="global-select"><option value="Straight">Straight</option><option value="Shuffle" selected>Shuffle</option><option value="Open">Open</option><option value="Trap">Trap</option></select></div>
     </div>
   </header>
 
   <div id="list-wrapper">
     <div class="col-headers">
-      <div class="col-h-loop">Loop</div>
-      <div class="col-h-part">Part</div>
-      <div class="col-h-chord">Chords</div>
-      <div class="col-h-tmpl">Template</div>
-      <div class="col-h-del"></div>
+      <div class="col-h-loop">Loop</div><div class="col-h-part">Part</div><div class="col-h-chord">Chords</div><div class="col-h-tmpl">Template</div><div class="col-h-del"></div>
     </div>
-    
-    <main id="line-container">
-      <div class="add-btn" id="add-btn">+</div>
-    </main>
-
-    <div class="controls-overlay">
-      <div class="play-btn play" id="play-btn">PLAY</div>
-    </div>
+    <main id="line-container"><div class="add-btn" id="add-btn">+</div></main>
+    <div class="controls-overlay"><div class="play-btn play" id="play-btn">PLAY</div></div>
   </div>
 </div>
-
-<div id="modal-overlay">
-  <div id="modal-content"></div>
-</div>
+<div id="modal-overlay"><div id="modal-content"></div></div>
 
 <script>
 /**
- * Roppon Code Editor Ver.2.3
+ * Roppon Code Editor Ver.2.4
  */
 
-// --- Constants & Data ---
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
-
-// 7. テンプレ進行リスト仕様に基づく完全なリスト
 const TEMPLATE_CATEGORIES = [
-  {
-    cat: "王道・定番系",
-    list: [
-      { name: "王道進行", deg: "IV-V-vi-vi", displayDeg: "IV - V - vi - IV", usage: "サビ最頻出" }, // Note: Spec says vi-IV but standard is IV-V-iii-vi. Following Spec: IV-V-vi-IV? No, standard is IV-V-iii-vi or IV-V-vi-IV. Spec says: IV - V - vi - IV. Wait, typically it's IV-V-iii-vi. Spec text says: "IV - V - vi - IV". I will follow spec literally.
-      // Correction: Spec says "王道進行: IV - V - vi - IV". Wait, usually "王道" is F-G-Em-Am (IV-V-iii-vi). 
-      // Checking Spec again carefully. "王道進行: I - V - vi - IV".
-      // Ah, spec says "I - V - vi - IV". (Pop Punk?) OK. Following Spec strictly.
-      { name: "王道進行", deg: "I-V-vi-IV", usage: "サビ最頻出" },
-      { name: "マイナー王道", deg: "vi-IV-I-V", usage: "切な系サビ" },
-      { name: "逆王道", deg: "IV-V-iii-vi", usage: "Aメロ／Bメロ" }
-    ]
-  },
-  {
-    cat: "J-POP特化進行",
-    list: [
-      { name: "小室進行", deg: "vi-IV-V-I", usage: "90s感・疾走" },
-      { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" },
-      { name: "カノン進行", deg: "I-V-vi-iii-IV-I-IV-V", usage: "長尺サビ" }
-    ]
-  },
-  {
-    cat: "アイドル・アニソン頻出",
-    list: [
-      { name: "4度進行", deg: "I-IV-vii°-iii-vi-ii-V-I", usage: "元気・明るい" },
-      { name: "泣き進行", deg: "I-iii-vi-V", usage: "感情表現" },
-      { name: "青春進行", deg: "I-V-IV-V", usage: "若さ・疾走" }
-    ]
-  },
-  {
-    cat: "メロ用・ブリッジ用",
-    list: [
-      { name: "Bメロ定番", deg: "ii-V-I", usage: "溜め" },
-      { name: "ブリッジ上昇", deg: "IV-V-V/vi-vi", usage: "サビ前" },
-      { name: "転調前進行", deg: "I-V-V/II", usage: "キーアップ直前" }
-    ]
-  },
-  {
-    cat: "エモ・ロック寄り",
-    list: [
-      { name: "エモ進行", deg: "vi-I-V-IV", usage: "エモい" },
-      { name: "ロック定番", deg: "I-bVII-IV", usage: "ロック定番展開" }
-    ]
-  }
+  { cat: "王道・定番系", list: [
+    { name: "王道進行", deg: "I-V-vi-IV", usage: "サビ最頻出" },
+    { name: "マイナー王道", deg: "vi-IV-I-V", usage: "切な系サビ" },
+    { name: "逆王道", deg: "IV-V-iii-vi", usage: "Aメロ／Bメロ" }
+  ]},
+  { cat: "J-POP特化進行", list: [
+    { name: "小室進行", deg: "vi-IV-V-I", usage: "90s感・疾走" },
+    { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" },
+    { name: "カノン進行", deg: "I-V-vi-iii-IV-I-IV-V", usage: "長尺サビ" }
+  ]},
+  { cat: "アイドル・アニソン頻出", list: [
+    { name: "4度進行", deg: "I-IV-vii°-iii-vi-ii-V-I", usage: "元気・明るい" },
+    { name: "泣き進行", deg: "I-iii-vi-V", usage: "感情表現" },
+    { name: "青春進行", deg: "I-V-IV-V", usage: "若さ・疾走" }
+  ]},
+  { cat: "メロ用・ブリッジ用", list: [
+    { name: "Bメロ定番", deg: "ii-V-I", usage: "溜め" },
+    { name: "ブリッジ上昇", deg: "IV-V-V/vi-vi", usage: "サビ前" },
+    { name: "転調前進行", deg: "I-V-V/II", usage: "キーアップ直前" }
+  ]},
+  { cat: "エモ・ロック寄り", list: [
+    { name: "エモ進行", deg: "vi-I-V-IV", usage: "エモい" },
+    { name: "ロック定番", deg: "I-bVII-IV", usage: "ロック定番展開" }
+  ]}
 ];
 
-// Flatten templates for easy lookup
 let ALL_TEMPLATES = [];
 TEMPLATE_CATEGORIES.forEach(c => ALL_TEMPLATES = ALL_TEMPLATES.concat(c.list));
 
-// Degree to semitone map (Major Scale based)
-const DEG_TO_SEMITONE = { 
-  "I":0, "II":2, "ii":2, "iii":4, "III":4, "IV":5, "iv":5, 
-  "V":7, "v":7, "vi":9, "VI":9, "vii°":11, "bVII":10, "V/vi": 11, "V/II": 9 // Simplification for playback
-};
+const DEG_TO_SEMITONE = { "I":0, "II":2, "ii":2, "iii":4, "III":4, "IV":5, "iv":5, "V":7, "v":7, "vi":9, "VI":9, "vii°":11, "bVII":10, "V/vi": 11, "V/II": 9 };
 
-// --- State Management ---
 let state = {
-  bpm: 120,
-  keyIndex: 0, // C
-  beat: 8,
-  drum: "Shuffle",
-  isPlaying: false,
+  bpm: 164, keyIndex: 0, beat: 16, drum: "Straight", isPlaying: false,
   lines: [
-    { loop: true, part: "イントロ", chords: "F-G-Em-Am", templateName: "逆王道", templateDeg: "IV-V-iii-vi", templateUsage: "Aメロ／Bメロ" }
+    { loop: true, part: "イントロ", chords: "F-G-Am-Am", templateName: "王道進行", templateDeg: "I-V-vi-IV", templateUsage: "サビ最頻出" },
+    { loop: true, part: "Aメロ", chords: "Am-F-C-G", templateName: "マイナー王道", templateDeg: "vi-IV-I-V", templateUsage: "切な系サビ" }
   ],
-  currentLineIndex: -1,
-  currentBeatGlobal: 0, // Global beat counter for continuity
-  nextNoteTime: 0
+  currentLineIndex: -1, currentBeatGlobal: 0, nextNoteTime: 0
 };
 
 let audioCtx = null;
-let schedulerTimer = null;
-let lookahead = 25.0; // ms
-let scheduleAheadTime = 0.1; // s
+let schedulerInterval = null;
 
-// --- Audio Engine ---
-
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-}
-
-// Noise buffer for Drums
-let noiseBuffer = null;
-function createNoiseBuffer() {
-  if (noiseBuffer) return noiseBuffer;
-  const bufferSize = audioCtx.sampleRate * 2; // 2sec
-  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-  noiseBuffer = buffer;
-  return buffer;
-}
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 
 function playKick(time, style) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  if (style === "Trap") {
-    // 808 Style
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(30, time + 0.5);
-    gain.gain.setValueAtTime(1.0, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
-    osc.start(time);
-    osc.stop(time + 0.5);
-  } else {
-    // Acoustic/Standard
-    osc.frequency.setValueAtTime(120, time);
-    osc.frequency.exponentialRampToValueAtTime(50, time + 0.1);
-    gain.gain.setValueAtTime(0.8, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-    osc.start(time);
-    osc.stop(time + 0.2);
-  }
-}
-
-function playHiHat(time, style, type) {
-  // type: 'closed', 'open', 'pedal'
-  const src = audioCtx.createBufferSource();
-  src.buffer = createNoiseBuffer();
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = "highpass";
-  filter.frequency.value = style === "Trap" ? 8000 : 5000;
-  
-  const gain = audioCtx.createGain();
-  src.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  const duration = (type === 'open') ? 0.4 : (style === "Trap" ? 0.05 : 0.08);
-  const vol = (style === "Straight") ? 0.3 : 0.2;
-
-  gain.gain.setValueAtTime(vol, time);
-  gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-
-  src.start(time);
-  src.stop(time + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.frequency.setValueAtTime(style === "Trap" ? 150 : 120, time);
+  osc.frequency.exponentialRampToValueAtTime(style === "Trap" ? 30 : 50, time + 0.1);
+  gain.gain.setValueAtTime(0.8, time);
+  gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+  osc.start(time); osc.stop(time + 0.2);
 }
 
 function playPiano(freq, time, duration, style) {
+  if (freq <= 0) return;
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  
-  // Style adjustments
-  if (style === "Trap") {
-    osc.type = 'sawtooth';
-    filterVal = 800;
-  } else if (style === "Open") {
-    osc.type = 'triangle';
-  } else {
-    osc.type = 'triangle';
-  }
-
+  osc.type = (style === "Trap") ? 'sawtooth' : 'triangle';
   osc.frequency.setValueAtTime(freq, time);
-  
-  // Envelope
   gain.gain.setValueAtTime(0, time);
-  gain.gain.linearRampToValueAtTime(0.3, time + 0.02);
-  
-  if (style === "Open") {
-    // Sustain
-    gain.gain.exponentialRampToValueAtTime(0.1, time + duration);
-    gain.gain.linearRampToValueAtTime(0, time + duration + 0.5);
-    osc.stop(time + duration + 0.5);
-  } else if (style === "Trap") {
-    // Staccato/Pluck
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
-    osc.stop(time + 0.3);
-  } else {
-    // Normal
-    gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
-    osc.stop(time + duration);
-  }
-  
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start(time);
+  gain.gain.linearRampToValueAtTime(0.2, time + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(time); osc.stop(time + duration);
 }
 
 function getFreq(noteName) {
   const noteMap = { "C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11 };
-  let base = noteName.replace(/m|dim|7|M7|sus4|aug/g, "");
-  // handle slash chords simply by taking root
-  if (base.includes("/")) base = base.split("/")[0];
-  
+  let base = noteName.replace(/m|dim|7|M7|sus4|aug/g, "").split("/")[0];
   let index = noteMap[base];
   if (index === undefined) return 0;
-  
-  // A4 = 440Hz, A4 is index 9 in octave 4. 
-  // Let's put chords in octave 3-4 range.
-  let octave = 4;
-  return 440 * Math.pow(2, (index - 9 + (octave - 4) * 12) / 12);
+  return 440 * Math.pow(2, (index - 9 - 12) / 12);
 }
 
-// --- Scheduler Logic ---
-
-function nextNote() {
-  const secondsPerBeat = 60.0 / state.bpm; // 1 beat (quarter note)
-  // We schedule 16th notes
-  const sixteenthTime = secondsPerBeat / 4;
-  state.nextNoteTime += sixteenthTime;
-  state.currentBeatGlobal++;
+// 修正されたスケジューラ：16分音符単位で確実に呼び出し
+function scheduler() {
+  while (state.nextNoteTime < audioCtx.currentTime + 0.1) {
+    scheduleNote(state.currentBeatGlobal, state.nextNoteTime);
+    const secondsPer16th = (60.0 / state.bpm) / 4;
+    state.nextNoteTime += secondsPer16th;
+    state.currentBeatGlobal++;
+  }
 }
 
 function scheduleNote(beatNumber, time) {
@@ -370,291 +202,76 @@ function scheduleNote(beatNumber, time) {
   const chords = line.chords.split("-").map(c => c.trim()).filter(c => c);
   if (chords.length === 0) return;
 
-  // 16th note grid (0 to 15 for a 4/4 bar)
-  // Logic adjusts based on "BEAT" setting (4, 8, 16) determines chord change freq
-  // BEAT 4 = Chord changes every Quarter Note? No, typically "Beat 4" means 4-beat rhythm.
-  // Standard assumption: Chords change evenly distributed across the bar(s).
-  // Let's assume input "C-G" with BEAT 8 means split evenly.
-  
-  // Calculate relative position in the chord progression
-  const sixteenthsPerChord = (state.beat === 16) ? 4 : (state.beat === 8 ? 8 : 16); // Rough mapping
-  // Let's simply say: The chords list fills the 'Loop'. 
-  // If user sets BEAT=8 (standard), and has 4 chords, each chord is 2 beats (8 16th notes).
-  
-  // We need to determine WHICH chord is active at this 16th note.
-  // Assume standard 4/4 time for calculation: 1 Bar = 16 sixteenths.
-  // If line has 4 chords, change every 4 sixteenths.
-  const totalSixteenths = 16 * Math.ceil(chords.length / 4); // Extend bars if many chords
-  const cycleBeat = beatNumber % totalSixteenths;
-  
-  const chordDurationIn16ths = totalSixteenths / chords.length;
-  const chordIndex = Math.floor(cycleBeat / chordDurationIn16ths);
-  const currentChord = chords[chordIndex % chords.length];
+  const total16ths = 16; 
+  const cycleBeat = beatNumber % total16ths;
+  const chordIdx = Math.floor((cycleBeat / total16ths) * chords.length);
+  const currentChord = chords[chordIdx];
 
-  const stepInBar = beatNumber % 16; // 0-15
+  // ドラム：BEAT設定に応じた間隔でキック
+  const kickInterval = state.beat === 16 ? 4 : (state.beat === 8 ? 8 : 16);
+  if (cycleBeat % kickInterval === 0) playKick(time, state.drum);
 
-  // --- RHYTHM GENERATION ---
-  
-  let swingOffset = 0;
-  if (state.drum === "Shuffle") {
-    // Swing the even 8th notes (steps 2, 6, 10, 14 in 16th grid)
-    // Actually 16th grid: 0, 1, 2, 3... 
-    // 8ths are at 0, 2, 4, 6...
-    // Shuffle moves the "and" (2, 6, 10, 14) later.
-    // Spec says "2:1" triplet feel.
-    if (stepInBar % 4 === 2) {
-      swingOffset = (60 / state.bpm / 4) * 0.33; // Shift a bit
+  // ピアノ：コードチェンジ時
+  if (cycleBeat % (total16ths / chords.length) === 0) {
+    const f = getFreq(currentChord);
+    if (f > 0) {
+      playPiano(f, time, 1.0, state.drum);
+      playPiano(f * (currentChord.includes("m") ? 1.189 : 1.259), time, 1.0, state.drum);
+      playPiano(f * 1.498, time, 1.0, state.drum);
     }
   }
 
-  const playTime = time + swingOffset;
-
-  // 1. DRUMS
-  if (state.drum === "Straight") {
-    // Kick: 1, 3 (0, 8)
-    if (stepInBar === 0 || stepInBar === 8) playKick(playTime, "Straight");
-    // HH: 8th notes (0, 2, 4...)
-    if (stepInBar % 2 === 0) playHiHat(playTime, "Straight", "closed");
-  } 
-  else if (state.drum === "Shuffle") {
-    // Kick: 1, 3 (0, 8)
-    if (stepInBar === 0 || stepInBar === 8) playKick(playTime, "Shuffle");
-    // HH: Shuffle pattern (0... 2(delayed)... 4... 6(delayed))
-    // Only play on 8th grid
-    if (stepInBar % 2 === 0) playHiHat(playTime, "Shuffle", "closed");
-  }
-  else if (state.drum === "Open") {
-    // Kick: Sparse (0)
-    if (stepInBar === 0) playKick(playTime, "Open");
-    // HH: Open/Half (0, 4, 8, 12)
-    if (stepInBar % 4 === 0) playHiHat(playTime, "Open", "open");
-  }
-  else if (state.drum === "Trap") {
-    // Kick: Heavy 808. Syncopated. 0, 6, 10...
-    if ([0, 6, 10].includes(stepInBar)) playKick(playTime, "Trap");
-    // HH: Fast rolls. 16ths usually, sometimes 32nds.
-    // Basic 16th roll
-    playHiHat(playTime, "Trap", "closed");
-    // Add 32nd roll on beat 4 (step 12-15) randomly
-    if (stepInBar >= 12 && Math.random() > 0.5) {
-      playHiHat(playTime + (60/state.bpm/8), "Trap", "closed"); // Interleaved 32nd
-    }
-  }
-
-  // 2. PIANO
-  const freq = getFreq(currentChord);
-  if (freq > 0) {
-    // Determine when to trigger piano based on style
-    let trigger = false;
-    let dur = 0.5;
-
-    if (state.drum === "Straight") {
-      // Whole notes or half notes (0)
-      if (cycleBeat % 16 === 0 || (cycleBeat % 16 === 0 && chordIndex !== Math.floor((cycleBeat-1)/chordDurationIn16ths))) {
-        trigger = true; dur = 2.0;
-      }
-    }
-    else if (state.drum === "Shuffle") {
-      // Off-beat chords (backbeat) or sustained
-      if (stepInBar === 0 || stepInBar === 6) { // 1 and "and of 2"
-        trigger = true; dur = 0.4;
-      }
-    }
-    else if (state.drum === "Open") {
-      // Long sustain on change
-      // Check if chord just changed
-      const prevSixteenth = cycleBeat - 1;
-      const prevIdx = Math.floor(prevSixteenth / chordDurationIn16ths);
-      if (cycleBeat === 0 || chordIndex !== prevIdx) {
-        trigger = true; dur = 4.0;
-      }
-    }
-    else if (state.drum === "Trap") {
-      // Dark loops, staccato on 1 and...
-      if (stepInBar % 8 === 0) {
-        trigger = true; dur = 0.2;
-      }
-    }
-
-    if (trigger) {
-      // Play Root
-      playPiano(freq, playTime, dur, state.drum);
-      // Play 3rd (Major/Minor detection needed, simplified to Maj for demo unless 'm' in name)
-      let isMinor = currentChord.includes("m") && !currentChord.includes("dim");
-      playPiano(freq * (isMinor ? 1.189 : 1.259), playTime, dur, state.drum); 
-      // Play 5th
-      playPiano(freq * 1.498, playTime, dur, state.drum);
-    }
-  }
-
-  // Loop Logic handling
-  if (cycleBeat === totalSixteenths - 1) {
-    // End of line, decide next
+  // 行の切り替え
+  if (cycleBeat === total16ths - 1) {
     let nextIdx = state.lines.findIndex((l, i) => i > state.currentLineIndex && l.loop);
-    if (nextIdx === -1) {
-      // Loop back to first looped line
-      nextIdx = state.lines.findIndex(l => l.loop);
-    }
-    
-    // We queue the change for the next tick
-    // But since `state.currentLineIndex` is read at start of `scheduleNote`, we update it now for *next* calls?
-    // Actually, we need to wait until this bar finishes.
-    // With `beatNumber`, we just keep incrementing. The visualizer needs to know when to switch.
+    if (nextIdx === -1) nextIdx = state.lines.findIndex(l => l.loop);
     if (nextIdx !== -1) {
-       // Just update index, the next `scheduleNote` call will pick up new chords
-       // But we need to reset beat counter relative to chord progression? 
-       // In this simple scheduler, we just switch the line source.
-       // However, `beatNumber` keeps growing. We should reset `state.currentBeatGlobal` logic or track beat-in-line.
-       // For simplicity: Update index. Logic above uses `beatNumber % total` based on current line chords.
-       // Ideally we switch exactly when `beatNumber` hits boundary.
-       setTimeout(() => {
-         state.currentLineIndex = nextIdx;
-         updateUIActive();
-       }, (60/state.bpm/4) * 1000); // Rough sync update
+      state.currentLineIndex = nextIdx;
+      // UI更新はメインスレッドで
+      setTimeout(updateUIActive, 0);
     }
   }
 }
-
-function scheduler() {
-  while (state.nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
-    scheduleNote(state.currentBeatGlobal, state.nextNoteTime);
-    nextNote();
-  }
-  if (state.isPlaying) {
-    schedulerTimer = requestAnimationFrame(scheduler);
-  }
-}
-
-// --- Logic: Template & Degrees ---
-
-function getKeyRootNote(keyIndex) {
-  return KEYS[keyIndex];
-}
-
-function degreeToChord(deg, keyIndex) {
-  // deg: "IV" or "vii°" etc.
-  let cleanDeg = deg.replace(/m|dim|7|M7|sus4|aug|\/.*|b/g, ""); // remove modifiers
-  // handle Flat degree (bVII)
-  let isFlat = deg.startsWith('b');
-  if(isFlat) cleanDeg = cleanDeg.substring(1);
-
-  let offset = DEG_TO_SEMITONE[cleanDeg];
-  if (isFlat) offset -= 1;
-  
-  let noteIdx = (keyIndex + offset) % 12;
-  if (noteIdx < 0) noteIdx += 12;
-  
-  let chord = KEYS[noteIdx];
-  
-  // Add minor/dim suffix
-  if (deg.includes("m") && !deg.includes("dim")) chord += "m"; // e.g. vi -> Am
-  else if (deg === "vi" || deg === "ii" || deg === "iii") chord += "m"; // Auto minor for diatonic lowercase
-  if (deg.includes("°") || deg.includes("dim")) chord += "dim";
-  
-  // Slash chord handling (simplified)
-  if (deg.includes("/")) {
-    let bass = deg.split("/")[1];
-    // logic... skip for MVP, just chord
-  }
-  
-  return chord;
-}
-
-function applyTemplateToChord(degStr) {
-  return degStr.split("-").map(d => degreeToChord(d, state.keyIndex)).join("-");
-}
-
-function identifyTemplate(chordsStr) {
-  // Convert chords back to degrees to find match?
-  // Easier: Convert all Templates to Chords in current Key and compare string
-  const input = chordsStr.trim();
-  
-  for (let t of ALL_TEMPLATES) {
-    const generated = applyTemplateToChord(t.deg);
-    if (generated === input) {
-      return t;
-    }
-  }
-  return null;
-}
-
-// --- UI Rendering ---
 
 function render() {
   const container = document.getElementById('line-container');
   const addBtn = document.getElementById('add-btn');
-  
-  // Clear existing lines (keeping logic efficient)
-  container.innerHTML = "";
-  container.appendChild(addBtn);
+  container.querySelectorAll('.line-row').forEach(r => r.remove());
 
   state.lines.forEach((line, idx) => {
     const row = document.createElement('div');
     row.className = 'line-row';
     if (idx === state.currentLineIndex && state.isPlaying) row.classList.add('playing');
     
-    // Loop
     const lBtn = document.createElement('div');
     lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
-    lBtn.onclick = () => { 
-      // Toggle loop. If turning ON, ensure at least one is on.
-      line.loop = !line.loop; 
-      render(); 
-    };
+    lBtn.onclick = () => { line.loop = !line.loop; render(); };
 
-    // Part
-    const pWrap = document.createElement('div');
-    pWrap.className = 'part-wrapper';
-    const pSel = document.createElement('select'); 
-    pSel.className = 'part-select';
-    PARTS.forEach(p => pSel.add(new Option(p, p))); 
-    pSel.value = line.part;
+    const pWrap = document.createElement('div'); pWrap.className = 'part-wrapper';
+    const pSel = document.createElement('select'); pSel.className = 'part-select';
+    PARTS.forEach(p => pSel.add(new Option(p, p))); pSel.value = line.part;
     pSel.onchange = (e) => line.part = e.target.value;
     pWrap.appendChild(pSel);
 
-    // Chords
-    const cWrap = document.createElement('div');
-    cWrap.className = 'chord-wrapper';
-    const cIn = document.createElement('input'); 
-    cIn.className = 'chords-input';
+    const cWrap = document.createElement('div'); cWrap.className = 'chord-wrapper';
+    const cIn = document.createElement('input'); cIn.className = 'chords-input';
     cIn.value = line.chords;
     cIn.onchange = (e) => { 
       line.chords = e.target.value; 
-      // Check for template match
-      const match = identifyTemplate(line.chords);
-      if (match) {
-        line.templateName = match.name;
-        line.templateDeg = match.displayDeg || match.deg;
-        line.templateUsage = match.usage;
-      } else {
-        line.templateName = "Custom";
-        line.templateDeg = "---";
-        line.templateUsage = "オリジナル進行";
-      }
+      const match = ALL_TEMPLATES.find(t => applyTemplate(t.deg) === line.chords);
+      line.templateName = match ? match.name : "Custom";
+      line.templateDeg = match ? match.deg : "---";
+      line.templateUsage = match ? match.usage : "オリジナル";
       render(); 
     };
     cWrap.appendChild(cIn);
 
-    // Template Display
-    const tDisp = document.createElement('div');
-    tDisp.className = 'template-display';
-    tDisp.innerHTML = `
-      <div class="td-name">${line.templateName}</div>
-      <div class="td-deg">${line.templateDeg}</div>
-      <div class="td-usage">${line.templateUsage}</div>
-    `;
+    const tDisp = document.createElement('div'); tDisp.className = 'template-display';
+    tDisp.innerHTML = `<div class="td-name">${line.templateName}</div><div class="td-deg">${line.templateDeg}</div><div class="td-usage">${line.templateUsage}</div>`;
     tDisp.onclick = () => showModal(idx);
 
-    // Delete
-    const dBtn = document.createElement('div');
-    dBtn.className = 'del-btn'; 
-    dBtn.textContent = '×';
-    dBtn.onclick = () => { 
-      if(state.lines.length > 1 && confirm("削除しますか？")) { 
-        state.lines.splice(idx, 1); 
-        render(); 
-      }
-    };
+    const dBtn = document.createElement('div'); dBtn.className = 'del-btn'; dBtn.textContent = '×';
+    dBtn.onclick = () => { if(state.lines.length > 1) { state.lines.splice(idx, 1); render(); } };
 
     row.append(lBtn, pWrap, cWrap, tDisp, dBtn);
     container.insertBefore(row, addBtn);
@@ -663,135 +280,78 @@ function render() {
 
 function updateUIActive() {
   document.querySelectorAll('.line-row').forEach((el, i) => {
-    if (i === state.currentLineIndex) el.classList.add('playing');
-    else el.classList.remove('playing');
+    el.classList.toggle('playing', i === state.currentLineIndex);
   });
 }
 
-// --- Modal Logic ---
 function showModal(lineIdx) {
   const overlay = document.getElementById('modal-overlay');
   const content = document.getElementById('modal-content');
   content.innerHTML = '<div class="modal-title">Template Select</div>';
-  
   TEMPLATE_CATEGORIES.forEach(cat => {
-    const section = document.createElement('div');
-    section.className = 'modal-section';
-    section.textContent = cat.cat;
+    const section = document.createElement('div'); section.className = 'modal-section'; section.textContent = cat.cat;
     content.appendChild(section);
-
     cat.list.forEach(t => {
-      const item = document.createElement('div');
-      item.className = 'modal-item';
-      item.innerHTML = `
-        <div class="m-name">${t.name}</div>
-        <div class="m-deg">${t.displayDeg || t.deg}</div>
-        <div class="m-usage">${t.usage}</div>
-      `;
+      const item = document.createElement('div'); item.className = 'modal-item';
+      item.innerHTML = `<div class="m-name">${t.name}</div><div class="m-deg">${t.deg}</div><div class="m-usage">${t.usage}</div>`;
       item.onclick = () => {
-        const line = state.lines[lineIdx];
-        line.templateName = t.name;
-        line.templateDeg = t.displayDeg || t.deg;
-        line.templateUsage = t.usage;
-        line.chords = applyTemplateToChord(t.deg);
-        overlay.style.display = 'none';
-        render();
+        const l = state.lines[lineIdx];
+        l.templateName = t.name; l.templateDeg = t.deg; l.templateUsage = t.usage;
+        l.chords = applyTemplate(t.deg);
+        overlay.style.display = 'none'; render();
       };
       content.appendChild(item);
     });
   });
-
   overlay.style.display = 'flex';
   overlay.onclick = (e) => { if(e.target===overlay) overlay.style.display='none'; };
 }
 
-// --- Event Listeners ---
+function applyTemplate(degStr) {
+  return degStr.split("-").map(d => {
+    let clean = d.replace(/m|dim|7|M7|sus4|aug|\/.*|b/g, "");
+    let offset = DEG_TO_SEMITONE[clean] || 0;
+    if (d.startsWith('b')) offset -= 1;
+    let n = KEYS[(state.keyIndex + offset) % 12];
+    if (d.includes("m") || ["vi","ii","iii"].includes(clean)) n += "m";
+    return n;
+  }).join("-");
+}
 
 document.getElementById('play-btn').onclick = async () => {
   initAudio();
   if (audioCtx.state === 'suspended') await audioCtx.resume();
-
   if (state.isPlaying) {
-    // STOP
     state.isPlaying = false;
-    cancelAnimationFrame(schedulerTimer);
+    clearInterval(schedulerInterval);
     document.getElementById('play-btn').className = "play-btn play";
     document.getElementById('play-btn').textContent = "PLAY";
-    state.currentLineIndex = -1;
-    updateUIActive();
+    state.currentLineIndex = -1; updateUIActive();
   } else {
-    // PLAY
-    // Find first loop
-    const startIdx = state.lines.findIndex(l => l.loop);
-    if (startIdx === -1) return; // No loops active
-
     state.isPlaying = true;
-    state.currentLineIndex = startIdx;
+    state.currentLineIndex = state.lines.findIndex(l => l.loop);
     state.currentBeatGlobal = 0;
     state.nextNoteTime = audioCtx.currentTime + 0.1;
-    
     document.getElementById('play-btn').className = "play-btn stop";
     document.getElementById('play-btn').textContent = "STOP";
-    scheduler();
+    schedulerInterval = setInterval(scheduler, 25);
   }
 };
 
 document.getElementById('add-btn').onclick = () => {
-  state.lines.push({ 
-    loop: false, part: "Aメロ", 
-    chords: "", 
-    templateName: "Custom", templateDeg: "---", templateUsage: "Select..." 
-  });
+  state.lines.push({ loop: false, part: "Aメロ", chords: "", templateName: "Custom", templateDeg: "---", templateUsage: "Select..." });
   render();
 };
 
-// Global Settings Change
 window.onload = () => {
-  // BPM
-  const bpmSel = document.getElementById('bpm-select');
-  for(let i=60; i<=200; i++) bpmSel.add(new Option(i, i));
-  bpmSel.value = state.bpm;
-  bpmSel.onchange = (e) => state.bpm = parseInt(e.target.value);
-
-  // Key
-  const keySel = document.getElementById('key-select');
-  KEYS.forEach((k, i) => keySel.add(new Option(k, i)));
-  keySel.value = state.keyIndex;
-  keySel.onchange = (e) => {
-    state.keyIndex = parseInt(e.target.value);
-    // Refresh chords based on templates if they are not custom?
-    // Spec says: "入力済みのコードもKeyに応じて上下する" -> Transpose existing chords
-    // But implementation logic is: Regenerate from Template Deg if possible? 
-    // Or transpose current text? Transposing text is safer for Custom inputs.
-    // For simplicity and robustness with templates: Re-apply template degrees.
-    state.lines.forEach(l => {
-       if (l.templateName !== "Custom") {
-         // Find template object to get degree
-         const t = identifyTemplateByProps(l.templateName); // helper needed or just re-search
-         // Actually we stored name/deg in state.lines, but we need raw degree for calc
-         // Since we stored display string, let's reverse lookup or transpose chords directly.
-         // Let's rely on stored Degree logic if we had it, but we only have display strings in UI state.
-         // Better: Find the template by name from ALL_TEMPLATES
-         const tmpl = ALL_TEMPLATES.find(x => x.name === l.templateName);
-         if(tmpl) l.chords = applyTemplateToChord(tmpl.deg);
-       } else {
-         // Custom: Need to transpose manually... Logic too complex for this block?
-         // Let's leave custom chords as is for now, or reset them? 
-         // Spec: "Keyに応じて上下する". 
-         // Simple impl: Just re-render templates. Custom chords staying as-is is safer than breaking them.
-       }
-    });
-    render();
-  };
-
-  // Beat
+  const b = document.getElementById('bpm-select'); for(let i=60;i<=200;i++) b.add(new Option(i,i)); b.value=state.bpm;
+  const k = document.getElementById('key-select'); KEYS.forEach((n,i)=> k.add(new Option(n,i))); k.value=state.keyIndex;
+  b.onchange = (e) => state.bpm = parseInt(e.target.value);
+  k.onchange = (e) => { state.keyIndex = parseInt(e.target.value); render(); };
   document.getElementById('beat-select').onchange = (e) => state.beat = parseInt(e.target.value);
-  // Drum
   document.getElementById('drum-select').onchange = (e) => state.drum = e.target.value;
-
   render();
 };
-
 </script>
 </body>
 </html>
