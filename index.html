@@ -1,382 +1,332 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Roppon Code Editor Ver.2.7</title>
-<style>
-/* --- 1. 基本・レイアウト設定 --- */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
-body { margin: 0; padding: 0; background-color: #000; color: #fff; overflow: hidden; width: 100vw; height: 100vh; }
-input, select, button { outline: none; border: none; background: none; color: inherit; }
-
-#app { display: flex; flex-direction: column; width: 100%; height: 100%; }
-
-/* --- 2. ヘッダーエリア --- */
-header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0; background: #000; border-bottom: 1px solid #333; z-index: 100; }
-.app-title { text-align: center; font-size: 5vw; font-weight: 800; color: #666; margin: 10px 0; letter-spacing: 1px; }
-.header-settings { width: 96%; margin: 0 auto; display: flex; justify-content: space-between; gap: 2vw; }
-
-.setting-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: #111; border-radius: 8px; padding: 5px 0; border: 1px solid #333; }
-.setting-label { font-size: 2.5vw; color: #888; margin-bottom: 2px; font-weight: bold; text-transform: uppercase; }
-.global-select { width: 100%; text-align: center; font-size: 4vw; font-weight: bold; appearance: none; text-align-last: center; }
-
-#bpm-select { color: #00E5FF; }
-#key-select { color: #FFD60A; }
-#beat-select { color: #FF9F0A; }
-#drum-select { color: #32D74B; }
-
-/* --- 3. リストエリア --- */
-#list-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.col-headers { display: flex; width: 100%; padding: 5px 2vw; background: #050505; color: #555; font-size: 2.2vw; font-weight: bold; border-bottom: 1px solid #222; }
-.col-h-loop { width: 10%; text-align: center; } 
-.col-h-part { width: 20%; text-align: center; } 
-.col-h-chord { width: 32%; text-align: center; } 
-.col-h-tmpl { width: 30%; text-align: center; } 
-
-main { flex: 1; overflow-y: auto; padding: 10px 2vw 220px 2vw; -webkit-overflow-scrolling: touch; }
-main::-webkit-scrollbar { display: none; }
-
-.line-row { height: 90px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #161616; border-radius: 10px; border: 1px solid #222; padding: 0 1vw; }
-.line-row.playing { border: 2px solid #00E5FF; box-shadow: 0 0 15px rgba(0, 229, 255, 0.3); background: #222; }
-
-/* ★ループボタン縮小 */
-.loop-btn { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #444; background: #000; margin: 0 auto; transition: 0.2s; }
-.loop-btn.active { background-color: #00E5FF; border-color: #00E5FF; box-shadow: 0 0 8px #00E5FF; }
-
-.part-wrapper { width: 20%; display: flex; justify-content: center; }
-.part-select { width: 90%; font-size: 3.2vw; color: #fff; background: #222; border-radius: 4px; padding: 8px 0; text-align: center; border: 1px solid #333; appearance: none; }
-
-.chord-wrapper { width: 32%; display: flex; justify-content: center; }
-.chords-input { width: 95%; height: 45px; background: #000; border: 1px solid #333; border-radius: 4px; color: #00E5FF; font-size: 3.8vw; text-align: center; font-weight: bold; }
-
-.template-display { width: 30%; height: 80%; background: #222; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 4px 8px; border: 1px solid #444; overflow: hidden; }
-.td-name { font-size: 3.2vw; font-weight: bold; color: #fff; white-space: nowrap; }
-.td-deg { font-size: 2.8vw; color: #00E5FF; white-space: nowrap; }
-
-.del-btn { width: 8%; text-align: center; color: #444; font-size: 6vw; padding-left: 5px; }
-.add-btn { margin-top: 10px; width: 100%; height: 60px; border: 2px dashed #333; border-radius: 10px; color: #555; font-size: 30px; display: flex; align-items: center; justify-content: center; }
-
-/* --- 4. コントロール --- */
-.controls-overlay { position: fixed; bottom: 0; left: 0; width: 100%; height: 160px; pointer-events: none; background: linear-gradient(to top, #000 70%, transparent); display: flex; justify-content: center; align-items: center; z-index: 200; padding-bottom: env(safe-area-inset-bottom); }
-.play-btn { width: 85px; height: 85px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; pointer-events: auto; }
-.play-btn.play { background: #fff; color: #000; border: 5px solid #333; }
-.play-btn.stop { background: #FF3B30; color: #fff; border: 5px solid #800; }
-
-/* --- 5. モーダル --- */
-#modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-#modal-content { width: 92%; max-height: 80%; background: #1a1a1a; border-radius: 15px; overflow-y: auto; padding: 20px; border: 1px solid #333; }
-.modal-item { background: #252525; margin-bottom: 10px; padding: 15px; border-radius: 10px; border-left: 4px solid #00E5FF; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>シンプルブロック崩し</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none; /* Prevent scroll on touch */
+        }
+        canvas {
+            background-color: #111;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            max-width: 100%;
+            max-height: 100%;
+        }
+        #uiLayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none; /* Let touches pass through to canvas */
+        }
+        .message {
+            color: #fff;
+            font-family: sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            pointer-events: auto; /* Allow clicking the message */
+            cursor: pointer;
+        }
+        #startBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-
-<div id="app">
-  <header>
-    <div class="app-title">Roppon Code Editor</div>
-    <div class="header-settings">
-      <div class="setting-group"><div class="setting-label">BPM</div><select id="bpm-select" class="global-select"></select></div>
-      <div class="setting-group"><div class="setting-label">KEY</div><select id="key-select" class="global-select"></select></div>
-      <div class="setting-group"><div class="setting-label">BEAT</div><select id="beat-select" class="global-select"><option value="4">4</option><option value="8" selected>8</option><option value="16">16</option></select></div>
-      <div class="setting-group"><div class="setting-label">DRUM</div><select id="drum-select" class="global-select"><option value="Straight">Straight</option><option value="Shuffle">Shuffle</option><option value="Open">Open</option><option value="Trap">Trap</option></select></div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="uiLayer">
+        <div id="messageBox" class="message" style="display: none;">
+            <div id="messageText">タップしてスタート</div>
+        </div>
     </div>
-  </header>
 
-  <div id="list-wrapper">
-    <div class="col-headers">
-      <div class="col-h-loop">LOOP</div><div class="col-h-part">PART</div><div class="col-h-chord">CHORDS</div><div class="col-h-tmpl">TEMPLATE</div>
-    </div>
-    <main id="line-container"><div class="add-btn" id="add-btn">+</div></main>
-    <div class="controls-overlay"><div class="play-btn play" id="play-btn">PLAY</div></div>
-  </div>
-</div>
-<div id="modal-overlay"><div id="modal-content"></div></div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
 
-<script>
-/**
- * Roppon Code Editor Ver.2.7
- */
-const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const PARTS = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
-const DEG_TO_SEMITONE = { "I":0, "II":2, "ii":2, "iii":4, "III":4, "IV":5, "iv":5, "V":7, "v":7, "vi":9, "VI":9, "vii°":11, "bVII":10, "V/vi": 11, "V/II": 9 };
+        // Set canvas size for mobile portrait
+        function resizeCanvas() {
+            const aspectRation = 9 / 16;
+            let width = window.innerWidth;
+            let height = window.innerHeight;
 
-const TEMPLATES = [
-  { name: "王道進行", deg: "I-V-vi-IV", usage: "サビ最頻出" },
-  { name: "マイナー王道", deg: "vi-IV-I-V", usage: "切な系サビ" },
-  { name: "逆王道", deg: "IV-V-iii-vi", usage: "Aメロ／Bメロ" },
-  { name: "小室進行", deg: "vi-IV-V-I", usage: "90s感・疾走" },
-  { name: "丸サ進行", deg: "IV-V-iii-vi", usage: "歌い出し安定" }
-];
+            if (width / height > aspectRation) {
+                width = height * aspectRation;
+            } else {
+                height = width / aspectRation;
+            }
 
-let state = {
-  bpm: 164, keyIndex: 0, beat: 8, drum: "Straight", isPlaying: false,
-  lines: [
-    { loop: true, part: "イントロ", chords: "F-G-Am-Am", templateName: "王道進行", templateDeg: "I-V-vi-IV" }
-  ],
-  currentLineIndex: -1, currentBeatGlobal: 0, nextNoteTime: 0
-};
+            canvas.width = width;
+            canvas.height = height;
 
-let audioCtx = null;
-let schedulerInterval = null;
+            // Re-initialize game objects if canvas resizes
+            if(gameState === 'init') {
+                initGameObjects();
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
 
-function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        // Game objects
+        let ball, paddle, blocks;
+        let score = 0;
+        let gameState = 'init'; // init, playing, gameover, clear
 
-/* --- 楽器: 硬質なピアノ --- */
-function playPiano(freq, time, duration) {
-  if (freq <= 0) return;
-  const master = audioCtx.createGain();
-  master.connect(audioCtx.destination);
-  
-  // 基音 + 硬さを出すFM的倍音
-  const osc1 = audioCtx.createOscillator();
-  const osc2 = audioCtx.createOscillator();
-  const g1 = audioCtx.createGain();
-  const g2 = audioCtx.createGain();
+        const blockRowCount = 5;
+        const blockColumnCount = 5;
 
-  osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, time);
-  osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq * 4, time); // 硬い高域
+        function initGameObjects() {
+            const cw = canvas.width;
+            const ch = canvas.height;
 
-  osc1.connect(g1); g1.connect(master);
-  osc2.connect(g2); g2.connect(master);
+            // Paddle
+            const paddleWidth = cw * 0.25;
+            const paddleHeight = ch * 0.02;
+            paddle = {
+                x: (cw - paddleWidth) / 2,
+                y: ch - paddleHeight - (ch * 0.05),
+                w: paddleWidth,
+                h: paddleHeight,
+                color: '#00BFFF'
+            };
 
-  master.gain.setValueAtTime(0, time);
-  master.gain.linearRampToValueAtTime(0.5, time + 0.005); // 超高速アタック
-  master.gain.exponentialRampToValueAtTime(0.01, time + duration);
+            // Ball
+            const ballRadius = cw * 0.02;
+            ball = {
+                x: cw / 2,
+                y: paddle.y - ballRadius - 1,
+                r: ballRadius,
+                dx: cw * 0.008,
+                dy: -ch * 0.006,
+                speed: ch * 0.008,
+                color: '#FF4500'
+            };
 
-  g2.gain.setValueAtTime(0.4, time);
-  g2.gain.exponentialRampToValueAtTime(0.001, time + 0.08); // 打鍵の瞬間のみ
+            // Blocks
+            blocks = [];
+            const blockPadding = cw * 0.02;
+            const blockOffsetTop = ch * 0.1;
+            const blockOffsetLeft = cw * 0.04;
+            const blockWidth = (cw - (blockOffsetLeft * 2) - (blockPadding * (blockColumnCount - 1))) / blockColumnCount;
+            const blockHeight = ch * 0.04;
 
-  osc1.start(time); osc1.stop(time + duration);
-  osc2.start(time); osc2.stop(time + duration);
-}
+            const colors = ['#FF6347', '#FFA500', '#32CD32', '#1E90FF', '#9370DB'];
 
-/* --- 楽器: ドラム --- */
-function playKick(time) {
-  const osc = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  osc.frequency.setValueAtTime(150, time);
-  osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.2);
-  g.gain.setValueAtTime(0.8, time);
-  g.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-  osc.connect(g); g.connect(audioCtx.destination);
-  osc.start(time); osc.stop(time + 0.2);
-}
-function playSnare(time, vol = 0.3) {
-  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  const node = audioCtx.createBufferSource(); node.buffer = buf;
-  const g = audioCtx.createGain();
-  g.gain.setValueAtTime(vol, time);
-  g.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
-  node.connect(g); g.connect(audioCtx.destination);
-  node.start(time);
-}
-function playHiHat(time, isOpen = false) {
-  const osc = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  osc.type = 'square'; osc.frequency.setValueAtTime(10000, time);
-  const f = audioCtx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 8000;
-  g.gain.setValueAtTime(0.06, time);
-  g.gain.exponentialRampToValueAtTime(0.01, time + (isOpen ? 0.2 : 0.05));
-  osc.connect(f); f.connect(g); g.connect(audioCtx.destination);
-  osc.start(time); osc.stop(time + 0.2);
-}
+            for (let c = 0; c < blockColumnCount; c++) {
+                blocks[c] = [];
+                for (let r = 0; r < blockRowCount; r++) {
+                    blocks[c][r] = {
+                        x: (c * (blockWidth + blockPadding)) + blockOffsetLeft,
+                        y: (r * (blockHeight + blockPadding)) + blockOffsetTop,
+                        w: blockWidth,
+                        h: blockHeight,
+                        status: 1,
+                        color: colors[r % colors.length]
+                    };
+                }
+            }
 
-/* --- スケジューラ --- */
-function scheduler() {
-  while (state.nextNoteTime < audioCtx.currentTime + 0.1) {
-    const isEven = state.currentBeatGlobal % 2 === 0;
-    let timingOffset = 0;
-    // Shuffle: 16分音符の偶数番目を遅らせる
-    if (state.drum === "Shuffle" && !isEven) {
-      timingOffset = (60.0 / state.bpm / 4) * 0.35;
-    }
-    scheduleNote(state.currentBeatGlobal, state.nextNoteTime + timingOffset);
-    state.nextNoteTime += (60.0 / state.bpm) / 4;
-    state.currentBeatGlobal++;
-  }
-}
+            score = 0;
+        }
 
-function scheduleNote(beatNumber, time) {
-  if (state.currentLineIndex === -1) return;
-  const line = state.lines[state.currentLineIndex];
-  const chords = line.chords.split("-").map(c => c.trim()).filter(c => c);
-  if (chords.length === 0) return;
+        // Input handling
+        let isTouching = false;
+        let touchX = 0;
 
-  const total16ths = 64; // 4小節ループ
-  const cycleBeat = beatNumber % total16ths;
-  const mBeat = cycleBeat % 16;
-  const chordIdx = Math.floor((cycleBeat / total16ths) * chords.length);
-  const currentChord = chords[chordIdx];
+        canvas.addEventListener('touchstart', (e) => {
+            isTouching = true;
+            touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+            e.preventDefault();
+        }, {passive: false});
 
-  // --- ドラム・BEAT連動 ---
-  const hhDiv = (state.beat === 16) ? 1 : (state.beat === 8 ? 2 : 4);
-  if (cycleBeat % hhDiv === 0) playHiHat(time, (state.drum === "Shuffle" && cycleBeat % 2 !== 0));
+        canvas.addEventListener('touchmove', (e) => {
+            if (isTouching) {
+                touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+            }
+            e.preventDefault();
+        }, {passive: false});
 
-  // スタイル別リズム
-  if (state.drum === "Trap") {
-    if (mBeat === 0 || mBeat === 6 || mBeat === 10) playKick(time);
-    if (mBeat === 8) playSnare(time, 0.5);
-  } else if (state.drum === "Shuffle") {
-    if (mBeat === 0 || mBeat === 9) playKick(time);
-    if (mBeat === 4 || mBeat === 13) playSnare(time, 0.3);
-  } else { // Straight & Open
-    if (mBeat === 0 || mBeat === 8) playKick(time);
-    if (mBeat === 4 || mBeat === 12) playSnare(time, 0.3);
-  }
+        canvas.addEventListener('touchend', (e) => {
+            isTouching = false;
+            e.preventDefault();
+        }, {passive: false});
 
-  // --- ピアノ奏法 ---
-  const f = getFreq(currentChord);
-  if (f > 0) {
-    const isChange = (cycleBeat % (total16ths / chords.length) === 0);
-    if (state.drum === "Open") {
-      if (cycleBeat % 4 === 0) playPiano(f * [1, 1.25, 1.5, 2][(cycleBeat/4)%4], time, 1.5);
-    } else if (state.drum === "Shuffle") {
-      if (isChange || cycleBeat % 4 === 0) {
-        const dur = (cycleBeat % 2 === 0) ? 0.3 : 0.08;
-        [1, 1.25, 1.5].forEach(m => playPiano(f * m, time, dur));
-      }
-    } else if (state.drum === "Trap") {
-      if (isChange || mBeat % 4 === 2) [1, 1.25, 1.5].forEach(m => playPiano(f * m, time, 0.08));
-    } else { // Straight
-      if (isChange || mBeat === 8) [1, 1.25, 1.5].forEach(m => playPiano(f * m, time, 1.0));
-    }
-  }
+        // Mouse fallback for testing on PC
+        canvas.addEventListener('mousemove', (e) => {
+            touchX = e.clientX - canvas.getBoundingClientRect().left;
+        });
 
-  // 行移動
-  if (cycleBeat === total16ths - 1) {
-    let nextIdx = state.lines.findIndex((l, i) => i > state.currentLineIndex && l.loop);
-    if (nextIdx === -1) nextIdx = state.lines.findIndex(l => l.loop);
-    if (nextIdx !== -1) { state.currentLineIndex = nextIdx; setTimeout(updateUIActive, 0); }
-  }
-}
+        messageBox.addEventListener('click', () => {
+            if (gameState === 'init' || gameState === 'gameover' || gameState === 'clear') {
+                initGameObjects();
+                gameState = 'playing';
+                messageBox.style.display = 'none';
+                gameLoop();
+            }
+        });
 
-/* --- ヘルパー: 周波数とトランスポーズ --- */
-function getFreq(chordName) {
-  if (!chordName) return 0;
-  const noteMap = { "C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11 };
-  let base = chordName.replace(/m|dim|7|M7|sus4|aug/g, "").split("/")[0];
-  let index = noteMap[base];
-  if (index === undefined) return 0;
-  // ★重要: KEYのインデックスを加算してトランスポーズ
-  let finalIndex = index + state.keyIndex;
-  return 440 * Math.pow(2, (finalIndex - 9 - 12) / 12);
-}
+        // Ensure first tap on screen also starts if msg box missed
+        canvas.addEventListener('click', () => {
+             if (gameState === 'init' || gameState === 'gameover' || gameState === 'clear') {
+                initGameObjects();
+                gameState = 'playing';
+                messageBox.style.display = 'none';
+                gameLoop();
+            }
+        });
 
-function applyTemplate(degStr) {
-  return degStr.split("-").map(d => {
-    let clean = d.replace(/m|dim|7|M7|sus4|aug|\/.*|b/g, "");
-    let offset = DEG_TO_SEMITONE[clean] || 0;
-    if (d.startsWith('b')) offset -= 1;
-    let n = KEYS[(state.keyIndex + offset) % 12];
-    if (d.includes("m") || ["vi","ii","iii"].includes(clean)) n += "m";
-    return n;
-  }).join("-");
-}
+        // Drawing functions
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddle.x, paddle.y, paddle.w, paddle.h);
+            ctx.fillStyle = paddle.color;
+            ctx.fill();
+            ctx.closePath();
+        }
 
-/* --- UI描画 --- */
-function render() {
-  const container = document.getElementById('line-container');
-  const addBtn = document.getElementById('add-btn');
-  container.querySelectorAll('.line-row').forEach(r => r.remove());
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
+            ctx.fill();
+            ctx.closePath();
+        }
 
-  state.lines.forEach((line, idx) => {
-    const row = document.createElement('div');
-    row.className = `line-row ${ (idx === state.currentLineIndex && state.isPlaying) ? 'playing' : '' }`;
-    
-    // Loop
-    const lBtn = document.createElement('div');
-    lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
-    lBtn.onclick = () => { line.loop = !line.loop; render(); };
+        function drawBlocks() {
+            for (let c = 0; c < blockColumnCount; c++) {
+                for (let r = 0; r < blockRowCount; r++) {
+                    if (blocks[c][r].status === 1) {
+                        let b = blocks[c][r];
+                        ctx.beginPath();
+                        ctx.rect(b.x, b.y, b.w, b.h);
+                        ctx.fillStyle = b.color;
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
 
-    // Part (復活)
-    const pWrap = document.createElement('div'); pWrap.className = 'part-wrapper';
-    const pSel = document.createElement('select'); pSel.className = 'part-select';
-    PARTS.forEach(p => pSel.add(new Option(p, p))); pSel.value = line.part;
-    pSel.onchange = (e) => line.part = e.target.value;
-    pWrap.appendChild(pSel);
+        function drawScore() {
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "#fff";
+            ctx.fillText("Score: " + score, 10, 30);
+        }
 
-    // Chord (復活)
-    const cWrap = document.createElement('div'); cWrap.className = 'chord-wrapper';
-    const cIn = document.createElement('input'); cIn.className = 'chords-input';
-    cIn.value = line.chords;
-    cIn.onchange = (e) => { line.chords = e.target.value; line.templateName = "Custom"; render(); };
-    cWrap.appendChild(cIn);
+        // Logic functions
+        function movePaddle() {
+            // Move paddle to touchX center
+            paddle.x = touchX - (paddle.w / 2);
 
-    // Template
-    const tDisp = document.createElement('div'); tDisp.className = 'template-display';
-    tDisp.innerHTML = `<div class="td-name">${line.templateName}</div><div class="td-deg">${line.templateDeg || ""}</div>`;
-    tDisp.onclick = () => showModal(idx);
+            // Boundary checks
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.w > canvas.width) paddle.x = canvas.width - paddle.w;
+        }
 
-    // Delete
-    const dBtn = document.createElement('div'); dBtn.className = 'del-btn'; dBtn.textContent = '×';
-    dBtn.onclick = () => { if(state.lines.length > 1) { state.lines.splice(idx, 1); render(); } };
+        function moveBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
 
-    row.append(lBtn, pWrap, cWrap, tDisp, dBtn);
-    container.insertBefore(row, addBtn);
-  });
-}
+            // Wall collision (left/right)
+            if (ball.x + ball.dx > canvas.width - ball.r || ball.x + ball.dx < ball.r) {
+                ball.dx = -ball.dx;
+            }
+            // Wall collision (top)
+            if (ball.y + ball.dy < ball.r) {
+                ball.dy = -ball.dy;
+            } else if (ball.y + ball.dy > canvas.height - ball.r) {
+                // Bottom
+                gameState = 'gameover';
+            }
 
-function updateUIActive() {
-  document.querySelectorAll('.line-row').forEach((el, i) => {
-    el.classList.toggle('playing', i === state.currentLineIndex);
-  });
-}
+            // Paddle collision
+            if (ball.y + ball.dy > paddle.y - ball.r && ball.y < paddle.y + paddle.h) {
+                if (ball.x > paddle.x && ball.x < paddle.x + paddle.w) {
+                    ball.dy = -Math.abs(ball.dy); // Force up
+                    // Add some english (spin)
+                    let hitPoint = ball.x - (paddle.x + paddle.w/2);
+                    ball.dx = hitPoint * 0.15;
+                }
+            }
+        }
 
-function showModal(lineIdx) {
-  const overlay = document.getElementById('modal-overlay');
-  const content = document.getElementById('modal-content');
-  content.innerHTML = '<h2 style="text-align:center">Template</h2>';
-  TEMPLATES.forEach(t => {
-    const item = document.createElement('div'); item.className = 'modal-item';
-    item.innerHTML = `<strong>${t.name}</strong><br><small>${t.deg} - ${t.usage}</small>`;
-    item.onclick = () => {
-      state.lines[lineIdx].templateName = t.name;
-      state.lines[lineIdx].templateDeg = t.deg;
-      state.lines[lineIdx].chords = applyTemplate(t.deg);
-      overlay.style.display = 'none'; render();
-    };
-    content.appendChild(item);
-  });
-  overlay.style.display = 'flex';
-  overlay.onclick = (e) => { if(e.target===overlay) overlay.style.display='none'; };
-}
+        function collisionDetection() {
+            for (let c = 0; c < blockColumnCount; c++) {
+                for (let r = 0; r < blockRowCount; r++) {
+                    let b = blocks[c][r];
+                    if (b.status === 1) {
+                        if (ball.x > b.x && ball.x < b.x + b.w && ball.y > b.y && ball.y < b.y + b.h) {
+                            ball.dy = -ball.dy;
+                            b.status = 0;
+                            score += 10;
 
-/* --- コントロール --- */
-document.getElementById('play-btn').onclick = async () => {
-  initAudio(); if (audioCtx.state === 'suspended') await audioCtx.resume();
-  if (state.isPlaying) {
-    state.isPlaying = false; clearInterval(schedulerInterval);
-    document.getElementById('play-btn').className = "play-btn play"; document.getElementById('play-btn').textContent = "PLAY";
-    state.currentLineIndex = -1; updateUIActive();
-  } else {
-    state.isPlaying = true; state.currentLineIndex = state.lines.findIndex(l => l.loop);
-    state.currentBeatGlobal = 0; state.nextNoteTime = audioCtx.currentTime + 0.1;
-    document.getElementById('play-btn').className = "play-btn stop"; document.getElementById('play-btn').textContent = "STOP";
-    schedulerInterval = setInterval(scheduler, 25);
-  }
-};
+                            if(score === blockRowCount * blockColumnCount * 10) {
+                                gameState = 'clear';
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-document.getElementById('add-btn').onclick = () => {
-  state.lines.push({ loop: false, part: "Aメロ", chords: "", templateName: "Custom" });
-  render();
-};
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBlocks();
+            drawPaddle();
+            drawBall();
+            drawScore();
+        }
 
-window.onload = () => {
-  const b = document.getElementById('bpm-select'); for(let i=60;i<=200;i++) b.add(new Option(i,i)); b.value=state.bpm;
-  const k = document.getElementById('key-select'); KEYS.forEach((n,i)=> k.add(new Option(n,i))); k.value=state.keyIndex;
-  b.onchange = (e) => state.bpm = parseInt(e.target.value);
-  k.onchange = (e) => { 
-    state.keyIndex = parseInt(e.target.value); 
-    // KEY変更時に既存のテンプレ適用行をトランスポーズ
-    state.lines.forEach(l => { if(l.templateDeg) l.chords = applyTemplate(l.templateDeg); });
-    render(); 
-  };
-  document.getElementById('beat-select').onchange = (e) => state.beat = parseInt(e.target.value);
-  document.getElementById('drum-select').onchange = (e) => state.drum = e.target.value;
-  render();
-};
-</script>
+        function showMessage(text) {
+            messageText.innerHTML = text;
+            messageBox.style.display = 'block';
+        }
+
+        function gameLoop() {
+            if (gameState === 'playing') {
+                movePaddle();
+                moveBall();
+                collisionDetection();
+                draw();
+                requestAnimationFrame(gameLoop);
+            } else if (gameState === 'gameover') {
+                showMessage(`ゲームオーバー<br>Score: ${score}<br><span style="font-size:16px;">タップしてリトライ</span>`);
+            } else if (gameState === 'clear') {
+                showMessage(`クリア！<br>Score: ${score}<br><span style="font-size:16px;">タップしてもう一度</span>`);
+            }
+        }
+
+        // Setup
+        resizeCanvas();
+        showMessage("タップしてスタート");
+
+    </script>
 </body>
 </html>
