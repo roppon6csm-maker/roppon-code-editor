@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Roppon Code Editor Ver.3.4</title>
+<title>Roppon Code Editor Ver.3.5</title>
 <style>
 /* --- 1. 基本・レイアウト設定 --- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
@@ -15,12 +15,14 @@ input, select, button { outline: none; border: none; background: none; color: in
 
 /* --- 2. ヘッダーエリア --- */
 header { flex: 0 0 auto; width: 100%; padding: env(safe-area-inset-top) 0 10px 0; background: #000; border-bottom: 1px solid #333; z-index: 100; }
-.app-title { text-align: center; font-size: 5vw; font-weight: 800; color: #666; margin: 10px 0; letter-spacing: 1px; }
-.header-settings { width: 96%; margin: 0 auto; display: flex; justify-content: space-between; gap: 2vw; }
+.header-top { display: flex; justify-content: space-between; align-items: center; padding: 0 4vw; }
+.app-title { font-size: 4.5vw; font-weight: 800; color: #666; letter-spacing: 1px; }
+.save-status { font-size: 2vw; color: #32D74B; font-weight: bold; }
 
+.header-settings { width: 96%; margin: 10px auto 0; display: flex; justify-content: space-between; gap: 2vw; }
 .setting-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: #111; border-radius: 8px; padding: 5px 0; border: 1px solid #333; }
-.setting-label { font-size: 2.5vw; color: #888; margin-bottom: 2px; font-weight: bold; text-transform: uppercase; }
-.global-select { width: 100%; text-align: center; font-size: 4vw; font-weight: bold; appearance: none; text-align-last: center; }
+.setting-label { font-size: 2.2vw; color: #888; margin-bottom: 2px; font-weight: bold; text-transform: uppercase; }
+.global-select { width: 100%; text-align: center; font-size: 3.8vw; font-weight: bold; appearance: none; text-align-last: center; }
 
 #bpm-select { color: #00E5FF; }
 #key-select { color: #FFD60A; }
@@ -83,7 +85,10 @@ main::-webkit-scrollbar { display: none; }
 
 <div id="app">
   <header>
-    <div class="app-title">Roppon Code Editor</div>
+    <div class="header-top">
+      <div class="app-title">Roppon Code Editor</div>
+      <div id="save-status" class="save-status">Cloud Syncing...</div>
+    </div>
     <div class="header-settings">
       <div class="setting-group"><div class="setting-label">BPM</div><select id="bpm-select" class="global-select"></select></div>
       <div class="setting-group"><div class="setting-label">KEY</div><select id="key-select" class="global-select"></select></div>
@@ -102,16 +107,19 @@ main::-webkit-scrollbar { display: none; }
 </div>
 <div id="modal-overlay"><div id="modal-content"></div></div>
 
-<script>
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
 /**
- * Roppon Code Editor Ver.3.4
- * Section Jump Feature + AI Melody + High Quality Sound Engine
+ * Roppon Code Editor Ver.3.5
+ * Chorus AI Logic + Cloud Auto-Save
  */
 const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const PARTS = ["イントロ", "Aメロ", "Bメロ", "プレコーラス", "サビ", "間奏", "Cメロ", "アウトロ"];
-const DEG_TO_SEMITONE = { 
-  "I":0, "II":2, "ii":2, "III":4, "iii":4, "IV":5, "iv":5, "V":7, "v":7, "VI":9, "vi":9, "VII":11, "vii":11, "vii°":11, "bVII":10, "bII":1, "bIII":3, "bVI":8, "V/vi": 11, "V/II": 9, "I7":0 
-};
+const DEG_TO_SEMITONE = { "I":0, "II":2, "ii":2, "III":4, "iii":4, "IV":5, "iv":5, "V":7, "v":7, "VI":9, "vi":9, "VII":11, "vii":11, "vii°":11, "bVII":10, "bII":1, "bIII":3, "bVI":8, "V/vi": 11, "V/II": 9, "I7":0 };
 
 const TEMPLATES = [
   { name: "YOASOBI進行", deg: "IV-V-iii-vi", usage: "夜に駆ける等。浮遊感と疾走感。" },
@@ -121,19 +129,13 @@ const TEMPLATES = [
   { name: "カノン進行", deg: "I-V-vi-iii-IV-I-IV-V", usage: "普遍的な美しさ。" },
   { name: "ポップパンク進行", deg: "I-V-vi-IV", usage: "明るく開放的。洋楽の定番。" },
   { name: "Rising Sun進行", deg: "IV-V-vi-V", usage: "力強く盛り上がる。EXILE等。" },
-  { name: "251進行", deg: "ii-V-I", usage: "ジャズ・ボサノバの基本。洗練。" },
-  { name: "スパイス進行", deg: "IV-iv-I", usage: "サブドミナントマイナーの切なさ。" },
-  { name: "ソウル進行", deg: "I-vi-ii-V", usage: "心地よい循環。ブラック系。" },
-  { name: "浮遊進行", deg: "IV-I-V-vi", usage: "落ち着かない独特のバランス。" },
-  { name: "悲しみ進行", deg: "vi-ii-V-I", usage: "マイナーからの解決。" },
-  { name: "サークル進行", deg: "vi-ii-V-I-IV-vii-III-vi", usage: "五度圏を一周。" },
-  { name: "ロックスター", deg: "I-IV-V-IV", usage: "シンプルで力強いロック。" }
+  { name: "251進行", deg: "ii-V-I", usage: "ジャズ・ボサノバの基本。洗練。" }
 ];
 
 let state = {
   bpm: 164, keyIndex: 0, beat: 8, drum: "Straight", isPlaying: false,
   lines: [
-    { loop: true, melodyOn: false, melodyPattern: [], part: "サビ", chords: "F-G-Em-Am", templateName: "YOASOBI進行", templateDeg: "IV-V-iii-vi" }
+    { id: "default-1", loop: true, melodyOn: false, melodyPattern: [], part: "サビ", chords: "F-G-Em-Am", templateName: "YOASOBI進行", templateDeg: "IV-V-iii-vi" }
   ],
   currentLineIndex: -1, currentBeatGlobal: 0, nextNoteTime: 0
 };
@@ -141,7 +143,77 @@ let state = {
 let audioCtx = null;
 let schedulerInterval = null;
 let noiseBuffer = null;
+let db, auth, user, appId;
 
+// --- Firebase Initialization ---
+const initFirebase = async () => {
+  const firebaseConfig = JSON.parse(__firebase_config);
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+  onAuthStateChanged(auth, async (u) => {
+    if (u) {
+      user = u;
+      loadData();
+    } else {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      } else {
+        await signInAnonymously(auth);
+      }
+    }
+  });
+};
+
+const saveData = async () => {
+  if (!user) return;
+  const statusEl = document.getElementById('save-status');
+  statusEl.textContent = "Syncing...";
+  statusEl.style.color = "#FF9F0A";
+  try {
+    const dataToSave = {
+      bpm: state.bpm,
+      keyIndex: state.keyIndex,
+      beat: state.beat,
+      drum: state.drum,
+      lines: state.lines.map(l => ({ ...l, playing: false }))
+    };
+    await setDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'project-state', 'current'), dataToSave);
+    statusEl.textContent = "Saved";
+    statusEl.style.color = "#32D74B";
+  } catch (e) {
+    statusEl.textContent = "Offline";
+    statusEl.style.color = "#FF3B30";
+  }
+};
+
+const loadData = async () => {
+  const docRef = doc(db, 'artifacts', appId, 'users', user.uid, 'project-state', 'current');
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const d = docSnap.data();
+    state.bpm = d.bpm || 164;
+    state.keyIndex = d.keyIndex || 0;
+    state.beat = d.beat || 8;
+    state.drum = d.drum || "Straight";
+    state.lines = d.lines || state.lines;
+    updateGlobalUI();
+    render();
+  } else {
+    document.getElementById('save-status').textContent = "Ready";
+  }
+};
+
+const updateGlobalUI = () => {
+  document.getElementById('bpm-select').value = state.bpm;
+  document.getElementById('key-select').value = state.keyIndex;
+  document.getElementById('beat-select').value = state.beat;
+  document.getElementById('drum-select').value = state.drum;
+};
+
+// --- Sound Engine ---
 function initAudio() { 
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
   if (!noiseBuffer) {
@@ -152,134 +224,120 @@ function initAudio() {
   }
 }
 
-/* --- サウンドエンジン --- */
-
 function playKick(time, vol = 1.0) {
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.frequency.setValueAtTime(180, time);
-  osc.frequency.exponentialRampToValueAtTime(45, time + 0.15);
-  gain.gain.setValueAtTime(vol * 0.8, time);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(time); osc.stop(time + 0.3);
+  const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+  o.frequency.setValueAtTime(180, time); o.frequency.exponentialRampToValueAtTime(45, time + 0.15);
+  g.gain.setValueAtTime(vol * 0.8, time); g.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+  o.connect(g); g.connect(audioCtx.destination); o.start(time); o.stop(time + 0.3);
 }
 
 function playSnare(time, vol = 1.0) {
-  const noise = audioCtx.createBufferSource(); noise.buffer = noiseBuffer;
-  const nFilter = audioCtx.createBiquadFilter(); nFilter.type = "highpass"; nFilter.frequency.value = 1200;
-  const nGain = audioCtx.createGain();
-  nGain.gain.setValueAtTime(vol * 0.35, time); nGain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-  const osc = audioCtx.createOscillator(); osc.type = "triangle"; osc.frequency.setValueAtTime(200, time);
-  osc.frequency.exponentialRampToValueAtTime(120, time + 0.1);
-  const oGain = audioCtx.createGain();
-  oGain.gain.setValueAtTime(vol * 0.45, time); oGain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
-  noise.connect(nFilter); nFilter.connect(nGain); nGain.connect(audioCtx.destination);
-  osc.connect(oGain); oGain.connect(audioCtx.destination);
-  noise.start(time); noise.stop(time + 0.2);
-  osc.start(time); osc.stop(time + 0.15);
+  const n = audioCtx.createBufferSource(); n.buffer = noiseBuffer;
+  const nf = audioCtx.createBiquadFilter(); nf.type = "highpass"; nf.frequency.value = 1200;
+  const ng = audioCtx.createGain(); ng.gain.setValueAtTime(vol * 0.35, time); ng.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+  const o = audioCtx.createOscillator(); o.type = "triangle"; o.frequency.setValueAtTime(200, time);
+  o.frequency.exponentialRampToValueAtTime(120, time + 0.1);
+  const og = audioCtx.createGain(); og.gain.setValueAtTime(vol * 0.45, time); og.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+  n.connect(nf); nf.connect(ng); ng.connect(audioCtx.destination);
+  o.connect(og); og.connect(audioCtx.destination); n.start(time); o.start(time); n.stop(time + 0.2); o.stop(time + 0.15);
 }
 
 function playHiHat(time, isOpen = false, vol = 1.0) {
-  const source = audioCtx.createBufferSource(); source.buffer = noiseBuffer;
-  const filter = audioCtx.createBiquadFilter(); filter.type = "highpass"; filter.frequency.value = 8000;
-  const gain = audioCtx.createGain();
-  gain.gain.setValueAtTime(vol * 0.08, time); gain.gain.exponentialRampToValueAtTime(0.001, time + (isOpen ? 0.35 : 0.06));
-  source.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-  source.start(time); source.stop(time + 0.4);
+  const s = audioCtx.createBufferSource(); s.buffer = noiseBuffer;
+  const f = audioCtx.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 8000;
+  const g = audioCtx.createGain(); g.gain.setValueAtTime(vol * 0.08, time); g.gain.exponentialRampToValueAtTime(0.001, time + (isOpen ? 0.35 : 0.06));
+  s.connect(f); f.connect(g); g.connect(audioCtx.destination); s.start(time); s.stop(time + 0.4);
 }
 
 function playPiano(freq, time, duration, isMinor = false, vol = 1.0) {
   if (freq <= 0) return;
-  const master = audioCtx.createGain(); master.connect(audioCtx.destination);
-  const intervals = isMinor ? [1, 1.189, 1.5] : [1, 1.25, 1.5];
-  intervals.forEach((mult) => {
+  const m = audioCtx.createGain(); m.connect(audioCtx.destination);
+  const ivs = isMinor ? [1, 1.189, 1.5] : [1, 1.25, 1.5];
+  ivs.forEach(v => {
     const o1 = audioCtx.createOscillator(); const o2 = audioCtx.createOscillator();
     const g1 = audioCtx.createGain(); const g2 = audioCtx.createGain();
-    const f = freq * mult;
-    o1.type = 'triangle'; o1.frequency.setValueAtTime(f, time);
-    o2.type = 'sine'; o2.frequency.setValueAtTime(f * 4, time);
-    o1.connect(g1); g1.connect(master); o2.connect(g2); g2.connect(master);
-    master.gain.setValueAtTime(0, time);
-    master.gain.linearRampToValueAtTime(vol * 0.2 / intervals.length, time + 0.005);
-    master.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    o1.type = 'triangle'; o1.frequency.setValueAtTime(freq * v, time);
+    o2.type = 'sine'; o2.frequency.setValueAtTime(freq * v * 4, time);
+    o1.connect(g1); g1.connect(m); o2.connect(g2); g2.connect(m);
+    m.gain.setValueAtTime(0, time); m.gain.linearRampToValueAtTime(vol * 0.2 / ivs.length, time + 0.005);
+    m.gain.exponentialRampToValueAtTime(0.001, time + duration);
     g2.gain.setValueAtTime(0.15, time); g2.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-    o1.start(time); o1.stop(time + duration); o2.start(time); o2.stop(time + duration);
+    o1.start(time); o2.start(time); o1.stop(time + duration); o2.stop(time + duration);
   });
 }
 
 function playMelody(freq, time, duration, vol = 1.0) {
   if (freq <= 0) return;
-  const master = audioCtx.createGain(); master.connect(audioCtx.destination);
-  const osc = audioCtx.createOscillator();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(freq, time);
-  master.gain.setValueAtTime(0, time);
-  master.gain.linearRampToValueAtTime(vol * 0.15, time + 0.01);
-  master.gain.exponentialRampToValueAtTime(0.001, time + duration);
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = 'lowpass'; filter.frequency.setValueAtTime(2000, time);
-  filter.frequency.exponentialRampToValueAtTime(500, time + duration);
-  osc.connect(filter); filter.connect(master);
-  osc.start(time); osc.stop(time + duration);
+  const m = audioCtx.createGain(); m.connect(audioCtx.destination);
+  const o = audioCtx.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(freq, time);
+  m.gain.setValueAtTime(0, time); m.gain.linearRampToValueAtTime(vol * 0.18, time + 0.01);
+  m.gain.exponentialRampToValueAtTime(0.001, time + duration);
+  const f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(2200, time);
+  f.frequency.exponentialRampToValueAtTime(400, time + duration);
+  o.connect(f); f.connect(m); o.start(time); o.stop(time + duration);
 }
 
-/* --- メロディ生成ロジック --- */
+// --- AI Melody Generation ---
+function generateMelodyPattern(chords, part) {
+  const isChorus = part === "サビ";
+  const p = [];
+  const cl = chords.split("-").map(c => c.trim()).filter(c => c);
+  if (cl.length === 0) return Array(64).fill(0);
 
-function generateMelodyPattern(chords) {
-  const pattern = [];
-  const chordList = chords.split("-").map(c => c.trim()).filter(c => c);
-  if (chordList.length === 0) return Array(64).fill(0);
+  // サビ用設定: 音符密度向上、より高い音階
+  const density = isChorus ? 0.75 : 0.45;
+  const octaveBoost = isChorus ? 2.0 : 1.0; 
+
   for (let i = 0; i < 64; i++) {
-    const chordIdx = Math.floor((i / 64) * chordList.length);
-    const chord = chordList[chordIdx];
-    const isStrongBeat = (i % 4 === 0);
-    const isWeakBeat = (i % 2 !== 0);
-    if (Math.random() > (isStrongBeat ? 0.3 : (isWeakBeat ? 0.8 : 0.5))) {
+    const cIdx = Math.floor((i / 64) * cl.length);
+    const chord = cl[cIdx];
+    const isStrong = (i % 4 === 0);
+    const isMid = (i % 2 === 0);
+
+    let threshold = density;
+    if (isStrong) threshold += 0.2; // 拍頭はほぼ鳴らす
+    if (isChorus && i % 8 === 0) threshold = 1.0; // サビなら8分ごとのアクセント
+
+    if (Math.random() < threshold) {
       const f = getFreq(chord);
       if (f > 0) {
-        const isMinor = chord.includes("m") || /[a-z]/.test(chord.split('/')[0]);
-        const chordTones = isMinor ? [1, 1.189, 1.5, 1.78, 2] : [1, 1.25, 1.5, 1.88, 2];
-        const tone = chordTones[Math.floor(Math.random() * chordTones.length)];
-        pattern.push(f * tone * 2);
-      } else pattern.push(0);
-    } else pattern.push(0);
+        const isMin = chord.includes("m") || /[a-z]/.test(chord.split('/')[0]);
+        // サビは6度や9度を混ぜてエモくする
+        const tones = isMin ? [1, 1.189, 1.5, 1.68, 2, 2.37] : [1, 1.25, 1.5, 1.68, 2, 2.5];
+        const t = tones[Math.floor(Math.random() * tones.length)];
+        p.push(f * t * 2 * octaveBoost); 
+      } else p.push(0);
+    } else p.push(0);
   }
-  return pattern;
+  return p;
 }
 
-/* --- シーケンサー --- */
-
+// --- Sequencer ---
 function scheduler() {
   while (state.nextNoteTime < audioCtx.currentTime + 0.1) {
     const isEven = state.currentBeatGlobal % 2 === 0;
-    let timingOffset = 0;
-    if (state.drum === "Shuffle" && !isEven) {
-      timingOffset = (60.0 / state.bpm / 4) * 0.35;
-    }
-    scheduleNote(state.currentBeatGlobal, state.nextNoteTime + timingOffset);
+    let offset = (state.drum === "Shuffle" && !isEven) ? (60.0 / state.bpm / 4) * 0.35 : 0;
+    scheduleNote(state.currentBeatGlobal, state.nextNoteTime + offset);
     state.nextNoteTime += (60.0 / state.bpm) / 4;
     state.currentBeatGlobal++;
   }
 }
 
-function scheduleNote(beatNumber, time) {
+function scheduleNote(beat, time) {
   if (state.currentLineIndex === -1) return;
   const line = state.lines[state.currentLineIndex];
   if (!line) return;
   const chords = line.chords.split("-").map(c => c.trim()).filter(c => c);
   if (chords.length === 0) return;
 
-  const total16ths = 64; 
-  const cycleBeat = beatNumber % total16ths;
-  const mBeat = cycleBeat % 16;
-  const chordIdx = Math.floor((cycleBeat / total16ths) * chords.length);
-  const currentChord = chords[chordIdx];
-
+  const cycle = beat % 64;
+  const mBeat = cycle % 16;
+  const cIdx = Math.floor((cycle / 64) * chords.length);
+  const curChord = chords[cIdx];
   const accent = (mBeat % 4 === 0) ? 1.3 : 0.75;
-  const hhDiv = (state.beat === 16) ? 1 : (state.beat === 8 ? 2 : 4);
-  if (cycleBeat % hhDiv === 0) playHiHat(time, false, (mBeat % 4 === 0 ? 1.0 : 0.6));
 
+  if (cycle % (state.beat === 16 ? 1 : 2) === 0) playHiHat(time, false, (mBeat % 4 === 0 ? 1.0 : 0.6));
+  
   if (state.drum === "Trap") {
     if (mBeat === 0 || mBeat === 6 || mBeat === 10 || mBeat === 13) playKick(time, 1.2);
     if (mBeat === 8) playSnare(time, 1.3);
@@ -287,52 +345,49 @@ function scheduleNote(beatNumber, time) {
     if (mBeat % 4 === 0) playKick(time, 1.2);
     if (mBeat % 4 === 2) playHiHat(time, true, 0.9);
     if (mBeat === 4 || mBeat === 12) playSnare(time, 1.1);
-  } else { 
-    if (mBeat === 0 || mBeat === 8) playKick(time, (state.drum === "Shuffle" && mBeat === 9 ? 0.8 : accent));
+  } else {
+    if (mBeat === 0 || mBeat === 8) playKick(time, accent);
     if (mBeat === 4 || mBeat === 12) playSnare(time, 1.0);
   }
 
-  if (line.melodyOn && line.melodyPattern[cycleBeat] > 0) {
-    playMelody(line.melodyPattern[cycleBeat], time, 0.15, 0.8);
+  if (line.melodyOn && line.melodyPattern[cycle] > 0) {
+    const dur = line.part === "サビ" ? 0.25 : 0.15;
+    playMelody(line.melodyPattern[cycle], time, dur, 0.85);
   }
 
-  const f = getFreq(currentChord);
-  const isMinor = currentChord && (currentChord.includes("m") || /[a-z]/.test(currentChord.split('/')[0]));
+  const f = getFreq(curChord);
+  const isMin = curChord && (curChord.includes("m") || /[a-z]/.test(curChord.split('/')[0]));
   if (f > 0) {
-    const isChange = (cycleBeat % (total16ths / chords.length) === 0);
     if (state.drum === "House") {
-      if (mBeat % 4 === 0) playPiano(f, time, 0.45, isMinor, accent);
+      if (mBeat % 4 === 0) playPiano(f, time, 0.45, isMin, accent);
     } else if (state.drum === "Shuffle") {
-      if (isChange || cycleBeat % 4 === 0) playPiano(f, time, (cycleBeat % 2 === 0 ? 0.35 : 0.1), isMinor, accent);
+      if (cycle % (64/chords.length) === 0 || cycle % 4 === 0) playPiano(f, time, (cycle % 2 === 0 ? 0.35 : 0.1), isMin, accent);
     } else {
-      if (isChange || mBeat === 8) playPiano(f, time, 0.9, isMinor, accent);
+      if (cycle % (64/chords.length) === 0 || mBeat === 8) playPiano(f, time, 0.9, isMin, accent);
     }
   }
 
-  if (cycleBeat === total16ths - 1) {
-    let nextIdx = line.loop ? state.currentLineIndex : (state.currentLineIndex + 1 >= state.lines.length ? 0 : state.currentLineIndex + 1);
-    state.currentLineIndex = nextIdx;
+  if (cycle === 63) {
+    state.currentLineIndex = line.loop ? state.currentLineIndex : (state.currentLineIndex + 1 >= state.lines.length ? 0 : state.currentLineIndex + 1);
     setTimeout(updateUIActive, 0);
   }
 }
 
-/* --- ヘルパー・UI --- */
-
-function getFreq(chordName) {
-  if (!chordName) return 0;
-  const noteMap = { "C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11 };
-  let base = chordName.replace(/m|dim|7|M7|sus4|aug/g, "").split("/")[0];
-  let index = noteMap[base];
-  if (index === undefined) return 0;
-  return 440 * Math.pow(2, (index + state.keyIndex - 9 - 12) / 12);
+// --- Utils ---
+function getFreq(name) {
+  if (!name) return 0;
+  const m = { "C":0, "C#":1, "D":2, "D#":3, "E":4, "F":5, "F#":6, "G":7, "G#":8, "A":9, "A#":10, "B":11 };
+  let base = name.replace(/m|dim|7|M7|sus4|aug/g, "").split("/")[0];
+  let i = m[base]; if (i === undefined) return 0;
+  return 440 * Math.pow(2, (i + state.keyIndex - 9 - 12) / 12);
 }
 
-function applyTemplate(degStr) {
-  return degStr.split("-").map(d => {
-    let clean = d.replace(/m|dim|7|M7|sus4|aug|\/.*|b|°/g, "");
-    let offset = DEG_TO_SEMITONE[clean] || 0;
-    if (d.startsWith('b')) offset -= 1;
-    let n = KEYS[(state.keyIndex + offset) % 12];
+function applyTemplate(deg) {
+  return deg.split("-").map(d => {
+    let c = d.replace(/m|dim|7|M7|sus4|aug|\/.*|b|°/g, "");
+    let o = DEG_TO_SEMITONE[c] || 0;
+    if (d.startsWith('b')) o -= 1;
+    let n = KEYS[(state.keyIndex + o) % 12];
     if (d.includes("m") || d.includes("°") || /^[a-z]/.test(d)) n += "m";
     return n;
   }).join("-");
@@ -343,90 +398,77 @@ function render() {
   const addBtn = document.getElementById('add-btn');
   if(!container || !addBtn) return;
   container.querySelectorAll('.line-row').forEach(r => r.remove());
-  state.lines.forEach((line, idx) => {
+  state.lines.forEach((l, idx) => {
     const row = document.createElement('div');
     row.className = `line-row ${ (idx === state.currentLineIndex && state.isPlaying) ? 'playing' : '' }`;
-    
-    // ★セクションジャンプ機能の追加
     row.onclick = (e) => {
-      // ボタンや入力欄、モーダル要素をクリックした場合はジャンプさせない
       if (e.target.closest('.loop-btn, .mel-btn, .part-select, .chords-input, .template-display, .del-btn')) return;
-      if (state.isPlaying) {
-        state.currentLineIndex = idx;
-        state.currentBeatGlobal = 0; // 次のノートから小節の頭にする
-        updateUIActive();
-      }
+      if (state.isPlaying) { state.currentLineIndex = idx; state.currentBeatGlobal = 0; updateUIActive(); }
     };
 
-    const lBtnBox = document.createElement('div'); lBtnBox.className = 'loop-btn-container';
-    const lBtn = document.createElement('div'); lBtn.className = `loop-btn ${line.loop ? 'active' : ''}`;
-    lBtn.onclick = (e) => { e.stopPropagation(); line.loop = !line.loop; render(); };
-    lBtnBox.appendChild(lBtn);
+    const lb = document.createElement('div'); lb.className = 'loop-btn-container';
+    const lbtn = document.createElement('div'); lbtn.className = `loop-btn ${l.loop ? 'active' : ''}`;
+    lbtn.onclick = (e) => { e.stopPropagation(); l.loop = !l.loop; render(); saveData(); };
+    lb.appendChild(lbtn);
 
-    const mBtnBox = document.createElement('div'); mBtnBox.className = 'mel-btn-container';
-    const mBtn = document.createElement('div'); mBtn.className = `mel-btn ${line.melodyOn ? 'active' : ''}`;
-    mBtn.textContent = 'MEL';
-    mBtn.onclick = (e) => { 
-      e.stopPropagation();
-      line.melodyOn = !line.melodyOn;
-      if (line.melodyOn) line.melodyPattern = generateMelodyPattern(line.chords);
-      render(); 
+    const mb = document.createElement('div'); mb.className = 'mel-btn-container';
+    const mbtn = document.createElement('div'); mbtn.className = `mel-btn ${l.melodyOn ? 'active' : ''}`;
+    mbtn.textContent = 'MEL';
+    mbtn.onclick = (e) => { 
+      e.stopPropagation(); l.melodyOn = !l.melodyOn;
+      if (l.melodyOn) l.melodyPattern = generateMelodyPattern(l.chords, l.part);
+      render(); saveData();
     };
-    mBtnBox.appendChild(mBtn);
+    mb.appendChild(mbtn);
 
-    const pSel = document.createElement('select'); pSel.className = 'part-select';
-    PARTS.forEach(p => pSel.add(new Option(p, p))); pSel.value = line.part;
-    pSel.onchange = (e) => line.part = e.target.value;
-    const pWrap = document.createElement('div'); pWrap.className = 'part-wrapper'; pWrap.appendChild(pSel);
+    const ps = document.createElement('select'); ps.className = 'part-select';
+    PARTS.forEach(p => ps.add(new Option(p, p))); ps.value = l.part;
+    ps.onchange = (e) => { l.part = e.target.value; if(l.melodyOn) l.melodyPattern = generateMelodyPattern(l.chords, l.part); saveData(); };
+    const pw = document.createElement('div'); pw.className = 'part-wrapper'; pw.appendChild(ps);
     
-    const cIn = document.createElement('input'); cIn.className = 'chords-input';
-    cIn.value = line.chords; cIn.onchange = (e) => { 
-      line.chords = e.target.value; line.templateName = "Custom"; 
-      if(line.melodyOn) line.melodyPattern = generateMelodyPattern(line.chords); 
-      render(); 
+    const ci = document.createElement('input'); ci.className = 'chords-input';
+    ci.value = l.chords; ci.onchange = (e) => { 
+      l.chords = e.target.value; l.templateName = "Custom"; 
+      if(l.melodyOn) l.melodyPattern = generateMelodyPattern(l.chords, l.part); 
+      render(); saveData();
     };
-    const cWrap = document.createElement('div'); cWrap.className = 'chord-wrapper'; cWrap.appendChild(cIn);
+    const cw = document.createElement('div'); cw.className = 'chord-wrapper'; cw.appendChild(ci);
     
-    const tDisp = document.createElement('div'); tDisp.className = 'template-display';
-    tDisp.innerHTML = `<div class="td-name">${line.templateName}</div><div class="td-deg">${line.templateDeg || ""}</div>`;
-    tDisp.onclick = (e) => { e.stopPropagation(); showModal(idx); };
+    const td = document.createElement('div'); td.className = 'template-display';
+    td.innerHTML = `<div class="td-name">${l.templateName}</div><div class="td-deg">${l.templateDeg || ""}</div>`;
+    td.onclick = (e) => { e.stopPropagation(); showModal(idx); };
     
-    const dBtn = document.createElement('div'); dBtn.className = 'del-btn'; dBtn.textContent = '×';
-    dBtn.onclick = (e) => { e.stopPropagation(); if(state.lines.length > 1) { state.lines.splice(idx, 1); render(); } };
+    const db = document.createElement('div'); db.className = 'del-btn'; db.textContent = '×';
+    db.onclick = (e) => { e.stopPropagation(); if(state.lines.length > 1) { state.lines.splice(idx, 1); render(); saveData(); } };
     
-    row.append(lBtnBox, mBtnBox, pWrap, cWrap, tDisp, dBtn);
+    row.append(lb, mb, pw, cw, td, db);
     container.insertBefore(row, addBtn);
   });
 }
 
 function updateUIActive() {
-  document.querySelectorAll('.line-row').forEach((el, i) => {
-    el.classList.toggle('playing', i === state.currentLineIndex);
-  });
+  document.querySelectorAll('.line-row').forEach((el, i) => { el.classList.toggle('playing', i === state.currentLineIndex); });
 }
 
-function showModal(lineIdx) {
-  const overlay = document.getElementById('modal-overlay');
-  const content = document.getElementById('modal-content');
-  content.innerHTML = '<h2 style="text-align:center; color:#666; margin-bottom:20px;">TEMPLATE LIBRARY</h2>';
+function showModal(idx) {
+  const ov = document.getElementById('modal-overlay');
+  const co = document.getElementById('modal-content');
+  co.innerHTML = '<h2 style="text-align:center; color:#666; margin-bottom:20px;">TEMPLATE LIBRARY</h2>';
   TEMPLATES.forEach(t => {
-    const item = document.createElement('div'); item.className = 'modal-item';
-    item.innerHTML = `<div style="display:flex; justify-content:space-between;"><strong>${t.name}</strong><span style="color:#00E5FF;">${t.deg}</span></div><div style="font-size:2.5vw; color:#888;">${t.usage}</div>`;
-    item.onclick = () => {
-      state.lines[lineIdx].templateName = t.name;
-      state.lines[lineIdx].templateDeg = t.deg;
-      state.lines[lineIdx].chords = applyTemplate(t.deg);
-      if(state.lines[lineIdx].melodyOn) state.lines[lineIdx].melodyPattern = generateMelodyPattern(state.lines[lineIdx].chords);
-      overlay.style.display = 'none'; render();
+    const it = document.createElement('div'); it.className = 'modal-item';
+    it.innerHTML = `<div style="display:flex; justify-content:space-between;"><strong>${t.name}</strong><span style="color:#00E5FF;">${t.deg}</span></div><div style="font-size:2.5vw; color:#888;">${t.usage}</div>`;
+    it.onclick = () => {
+      state.lines[idx].templateName = t.name; state.lines[idx].templateDeg = t.deg; state.lines[idx].chords = applyTemplate(t.deg);
+      if(state.lines[idx].melodyOn) state.lines[idx].melodyPattern = generateMelodyPattern(state.lines[idx].chords, state.lines[idx].part);
+      ov.style.display = 'none'; render(); saveData();
     };
-    content.appendChild(item);
+    co.appendChild(it);
   });
-  overlay.style.display = 'flex';
-  overlay.onclick = (e) => { if(e.target===overlay) overlay.style.display='none'; };
+  ov.style.display = 'flex';
+  ov.onclick = (e) => { if(e.target===ov) ov.style.display='none'; };
 }
 
-/* --- エントリー --- */
-
+// --- Main ---
 document.getElementById('play-btn').onclick = async () => {
   initAudio(); if (audioCtx.state === 'suspended') await audioCtx.resume();
   if (state.isPlaying) {
@@ -434,29 +476,30 @@ document.getElementById('play-btn').onclick = async () => {
     document.getElementById('play-btn').className = "play-btn play"; document.getElementById('play-btn').textContent = "PLAY";
     state.currentLineIndex = -1; updateUIActive();
   } else {
-    state.isPlaying = true; state.currentLineIndex = 0;
-    state.currentBeatGlobal = 0; state.nextNoteTime = audioCtx.currentTime + 0.1;
+    state.isPlaying = true; state.currentLineIndex = 0; state.currentBeatGlobal = 0;
+    state.nextNoteTime = audioCtx.currentTime + 0.1;
     document.getElementById('play-btn').className = "play-btn stop"; document.getElementById('play-btn').textContent = "STOP";
     schedulerInterval = setInterval(scheduler, 25);
   }
 };
 
 document.getElementById('add-btn').onclick = () => {
-  state.lines.push({ loop: false, melodyOn: false, melodyPattern: [], part: "Aメロ", chords: "C-G-Am-F", templateName: "Custom" });
-  render();
+  state.lines.push({ id: Date.now().toString(), loop: false, melodyOn: false, melodyPattern: [], part: "Aメロ", chords: "C-G-Am-F", templateName: "Custom" });
+  render(); saveData();
 };
 
 window.onload = () => {
   const b = document.getElementById('bpm-select'); for(let i=60;i<=200;i++) b.add(new Option(i,i)); b.value=state.bpm;
   const k = document.getElementById('key-select'); KEYS.forEach((n,i)=> k.add(new Option(n,i))); k.value=state.keyIndex;
-  b.onchange = (e) => state.bpm = parseInt(e.target.value);
+  b.onchange = (e) => { state.bpm = parseInt(e.target.value); saveData(); };
   k.onchange = (e) => { 
     state.keyIndex = parseInt(e.target.value); 
     state.lines.forEach(l => { if(l.templateDeg) l.chords = applyTemplate(l.templateDeg); });
-    render(); 
+    render(); saveData();
   };
-  document.getElementById('beat-select').onchange = (e) => state.beat = parseInt(e.target.value);
-  document.getElementById('drum-select').onchange = (e) => state.drum = e.target.value;
+  document.getElementById('beat-select').onchange = (e) => { state.beat = parseInt(e.target.value); saveData(); };
+  document.getElementById('drum-select').onchange = (e) => { state.drum = e.target.value; saveData(); };
+  initFirebase();
   render();
 };
 </script>
